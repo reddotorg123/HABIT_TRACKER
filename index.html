@@ -337,13 +337,22 @@ monthSel.onchange=render;
 render();
 </script>
 
-<!-- ================= FIREBASE AUTH + FIRESTORE ================= -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, getRedirectResult, signOut, onAuthStateChanged }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore, doc, setDoc, onSnapshot }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+import {
+  getAuth,
+  GoogleAuthProvider,
+  signInWithRedirect,
+  getRedirectResult,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import {
+  getFirestore,
+  doc,
+  setDoc,
+  onSnapshot
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDNoBvgu7W4txBT-nbnho_ILwU462bhlC4",
@@ -355,6 +364,8 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
+
+/* 🔁 HANDLE REDIRECT RESULT */
 getRedirectResult(auth).catch(err=>{
   console.error("Login redirect error:", err);
 });
@@ -367,7 +378,7 @@ let cloudStore={}, unsubscribe=null;
 const nativeLS=window.localStorage;
 
 loginBtn.onclick = () => signInWithRedirect(auth, provider);
-logoutBtn.onclick=()=>signOut(auth);
+logoutBtn.onclick = () => signOut(auth);
 
 onAuthStateChanged(auth,user=>{
   if(unsubscribe)unsubscribe();
@@ -405,6 +416,7 @@ window.localStorage={
   }
 };
 </script>
+
 
 </body>
 </html>
