@@ -337,14 +337,12 @@ monthSel.onchange=render;
 render();
 </script>
 
-<!-- ================= FIREBASE AUTH + FIRESTORE (FINAL FIXED) ================= -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
   getAuth,
   GoogleAuthProvider,
-  signInWithRedirect,
-  getRedirectResult,
+  signInWithPopup,
   signOut,
   onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
@@ -355,7 +353,7 @@ import {
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-/* 🔐 Firebase config */
+/* Firebase config */
 const firebaseConfig = {
   apiKey: "AIzaSyDNoBvgu7W4txBT-nbnho_ILwU462bhlC4",
   authDomain: "habit-tracker-de698.firebaseapp.com",
@@ -373,45 +371,41 @@ const loginBtn  = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const userEmail = document.getElementById("userEmail");
 
-/* Handle redirect result ONCE */
-getRedirectResult(auth).catch(err=>{
-  console.error("Login redirect error:", err);
-});
-
 /* Login / Logout */
-loginBtn.onclick  = () => signInWithRedirect(auth, provider);
+loginBtn.onclick = async () => {
+  try {
+    await signInWithPopup(auth, provider);
+  } catch (e) {
+    console.error("Login failed:", e);
+  }
+};
+
 logoutBtn.onclick = () => signOut(auth);
 
-/* 🔁 Cloud save helper (SAFE) */
-function saveToCloud(key, value){
-  if(USER_KEY !== "guest"){
-    setDoc(
-      doc(db,"users",USER_KEY),
-      { [key]: value },
-      { merge:true }
-    );
-  }
-}
-
-/* 🔄 AUTH STATE */
+/* AUTH STATE (THIS IS THE KEY FIX) */
 let unsubscribe = null;
 
-onAuthStateChanged(auth, user=>{
-  if(unsubscribe) unsubscribe();
+onAuthStateChanged(auth, user => {
+  console.log("Auth state changed:", user);
 
-  if(user){
+  if (unsubscribe) unsubscribe();
+
+  if (user) {
+    /* 🔐 USER IS LOGGED IN */
     setUser(user.uid);
-    loginBtn.style.display = "none";
+
+    loginBtn.style.display  = "none";
     logoutBtn.style.display = "inline-block";
-    userEmail.textContent = user.email;
+    userEmail.textContent  = user.email;
 
-    const ref = doc(db,"users",user.uid);
+    const ref = doc(db, "users", user.uid);
 
-    unsubscribe = onSnapshot(ref, snap=>{
+    /* 🔄 LIVE SYNC */
+    unsubscribe = onSnapshot(ref, snap => {
       const data = snap.data();
-      if(!data) return;
+      if (!data) return;
 
-      Object.keys(data).forEach(k=>{
+      Object.keys(data).forEach(k => {
         localStorage.setItem(k, data[k]);
       });
 
@@ -422,21 +416,30 @@ onAuthStateChanged(auth, user=>{
       render();
     });
 
-  }else{
+  } else {
+    /* 👤 GUEST MODE */
     setUser(null);
-    loginBtn.style.display = "inline-block";
+
+    loginBtn.style.display  = "inline-block";
     logoutBtn.style.display = "none";
-    userEmail.textContent = "";
+    userEmail.textContent  = "";
+
     render();
   }
 });
 
-/* 🔁 PATCH EXISTING STORAGE WRITES (NO UI CHANGE) */
+/* 🔁 CLOUD AUTOSAVE (GOOGLE SHEETS STYLE) */
 const _setItem = localStorage.setItem.bind(localStorage);
 
-localStorage.setItem = (k,v)=>{
-  _setItem(k,v);
-  saveToCloud(k,v);
+localStorage.setItem = (k, v) => {
+  _setItem(k, v);
+
+  if (USER_KEY !== "guest") {
+    setDoc(
+      doc(db, "users", USER_KEY),
+      { [k]: v },
+      { merge: true }
+    );
+  }
 };
 </script>
-
