@@ -354,6 +354,7 @@ import {
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
+/* ================= FIREBASE INIT ================= */
 const firebaseConfig = {
   apiKey: "AIzaSyDNoBvgu7W4txBT-nbnho_ILwU462bhlC4",
   authDomain: "habit-tracker-de698.firebaseapp.com",
@@ -365,58 +366,71 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-/* 🔁 HANDLE REDIRECT RESULT */
-getRedirectResult(auth).catch(err=>{
-  console.error("Login redirect error:", err);
-});
+/* ================= UI HOOKS ================= */
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const userEmail = document.getElementById("userEmail");
 
-const loginBtn=document.getElementById("loginBtn");
-const logoutBtn=document.getElementById("logoutBtn");
-const userEmail=document.getElementById("userEmail");
-
-let cloudStore={}, unsubscribe=null;
-const nativeLS=window.localStorage;
-
+/* ================= AUTH FLOW ================= */
 loginBtn.onclick = () => signInWithRedirect(auth, provider);
 logoutBtn.onclick = () => signOut(auth);
 
-onAuthStateChanged(auth,user=>{
-  if(unsubscribe)unsubscribe();
-
-  if(user){
-    setUser(user.uid);
-    loginBtn.style.display="none";
-    logoutBtn.style.display="inline-block";
-    userEmail.textContent=user.email;
-
-    const ref=doc(db,"users",user.uid);
-    unsubscribe=onSnapshot(ref,snap=>{
-      cloudStore=snap.data()||{};
-      habits=JSON.parse(cloudStore[ukey("habit-list")]||"null")||habits;
-      render();
-    });
-  }else{
-    setUser(null);
-    cloudStore={};
-    loginBtn.style.display="inline-block";
-    logoutBtn.style.display="none";
-    userEmail.textContent="";
-    render();
-  }
+getRedirectResult(auth).catch(err => {
+  console.error("Redirect login error:", err);
 });
 
-/* STORAGE BRIDGE */
-window.localStorage={
-  getItem:k=>k in cloudStore?cloudStore[k]:nativeLS.getItem(k),
-  setItem(k,v){
-    cloudStore[k]=v;
-    USER_KEY!=="guest"
-      ?setDoc(doc(db,"users",USER_KEY),{[k]:v},{merge:true})
-      :nativeLS.setItem(k,v);
+/* ================= STORAGE ADAPTER ================= */
+let USER_UID = null;
+let cloudStore = {};
+let unsubscribe = null;
+
+/* Override localStorage (backend only, UI untouched) */
+const nativeLS = window.localStorage;
+window.localStorage = {
+  getItem(key) {
+    return key in cloudStore ? cloudStore[key] : null;
+  },
+  setItem(key, value) {
+    cloudStore[key] = value;
+    if (USER_UID) {
+      setDoc(
+        doc(db, "users", USER_UID),
+        { [key]: value },
+        { merge: true }
+      );
+    }
   }
 };
+
+/* ================= AUTH STATE ================= */
+onAuthStateChanged(auth, user => {
+
+  if (unsubscribe) unsubscribe();
+
+  if (user) {
+    USER_UID = user.uid;
+    setUser(USER_UID); // uses your existing function
+
+    loginBtn.style.display = "none";
+    logoutBtn.style.display = "inline-block";
+    userEmail.textContent = user.email;
+
+    const ref = doc(db, "users", USER_UID);
+
+    unsubscribe = onSnapshot(ref, snap => {
+      cloudStore = snap.data() || {};
+      habits = JSON.parse(
+        cloudStore["habit-list"] || "null"
+      ) || habits;
+      render(); // your existing render()
+    });
+
+  } else {
+    USER_UID = null;
+    cloudStore = {};
+    loginBtn.style.display = "inline-block";
+    logoutBtn.style.display = "none";
+    userEmail.textContent = "";
+  }
+});
 </script>
-
-
-</body>
-</html>
