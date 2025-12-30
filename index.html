@@ -337,6 +337,7 @@ monthSel.onchange=render;
 render();
 </script>
 
+<!-- ================= FIREBASE AUTH + FIRESTORE (FINAL FIXED) ================= -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import {
@@ -354,83 +355,88 @@ import {
   onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
 
-/* ================= FIREBASE INIT ================= */
+/* 🔐 Firebase config */
 const firebaseConfig = {
   apiKey: "AIzaSyDNoBvgu7W4txBT-nbnho_ILwU462bhlC4",
   authDomain: "habit-tracker-de698.firebaseapp.com",
   projectId: "habit-tracker-de698"
 };
 
+/* Init */
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
 
-/* ================= UI HOOKS ================= */
-const loginBtn = document.getElementById("loginBtn");
+/* UI */
+const loginBtn  = document.getElementById("loginBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const userEmail = document.getElementById("userEmail");
 
-/* ================= AUTH FLOW ================= */
-loginBtn.onclick = () => signInWithRedirect(auth, provider);
-logoutBtn.onclick = () => signOut(auth);
-
-getRedirectResult(auth).catch(err => {
-  console.error("Redirect login error:", err);
+/* Handle redirect result ONCE */
+getRedirectResult(auth).catch(err=>{
+  console.error("Login redirect error:", err);
 });
 
-/* ================= STORAGE ADAPTER ================= */
-let USER_UID = null;
-let cloudStore = {};
+/* Login / Logout */
+loginBtn.onclick  = () => signInWithRedirect(auth, provider);
+logoutBtn.onclick = () => signOut(auth);
+
+/* 🔁 Cloud save helper (SAFE) */
+function saveToCloud(key, value){
+  if(USER_KEY !== "guest"){
+    setDoc(
+      doc(db,"users",USER_KEY),
+      { [key]: value },
+      { merge:true }
+    );
+  }
+}
+
+/* 🔄 AUTH STATE */
 let unsubscribe = null;
 
-/* Override localStorage (backend only, UI untouched) */
-const nativeLS = window.localStorage;
-window.localStorage = {
-  getItem(key) {
-    return key in cloudStore ? cloudStore[key] : null;
-  },
-  setItem(key, value) {
-    cloudStore[key] = value;
-    if (USER_UID) {
-      setDoc(
-        doc(db, "users", USER_UID),
-        { [key]: value },
-        { merge: true }
-      );
-    }
-  }
-};
+onAuthStateChanged(auth, user=>{
+  if(unsubscribe) unsubscribe();
 
-/* ================= AUTH STATE ================= */
-onAuthStateChanged(auth, user => {
-
-  if (unsubscribe) unsubscribe();
-
-  if (user) {
-    USER_UID = user.uid;
-    setUser(USER_UID); // uses your existing function
-
+  if(user){
+    setUser(user.uid);
     loginBtn.style.display = "none";
     logoutBtn.style.display = "inline-block";
     userEmail.textContent = user.email;
 
-    const ref = doc(db, "users", USER_UID);
+    const ref = doc(db,"users",user.uid);
 
-    unsubscribe = onSnapshot(ref, snap => {
-      cloudStore = snap.data() || {};
+    unsubscribe = onSnapshot(ref, snap=>{
+      const data = snap.data();
+      if(!data) return;
+
+      Object.keys(data).forEach(k=>{
+        localStorage.setItem(k, data[k]);
+      });
+
       habits = JSON.parse(
-        cloudStore["habit-list"] || "null"
+        localStorage.getItem(ukey("habit-list"))
       ) || habits;
-      render(); // your existing render()
+
+      render();
     });
 
-  } else {
-    USER_UID = null;
-    cloudStore = {};
+  }else{
+    setUser(null);
     loginBtn.style.display = "inline-block";
     logoutBtn.style.display = "none";
     userEmail.textContent = "";
+    render();
   }
 });
+
+/* 🔁 PATCH EXISTING STORAGE WRITES (NO UI CHANGE) */
+const _setItem = localStorage.setItem.bind(localStorage);
+
+localStorage.setItem = (k,v)=>{
+  _setItem(k,v);
+  saveToCloud(k,v);
+};
 </script>
+
