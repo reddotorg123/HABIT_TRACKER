@@ -340,7 +340,7 @@ render();
 <!-- ================= FIREBASE AUTH + FIRESTORE ================= -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+import { getAuth, GoogleAuthProvider, signInWithPopup, getRedirectResult, signOut, onAuthStateChanged }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getFirestore, doc, setDoc, onSnapshot }
 from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
@@ -355,6 +355,9 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
 const provider = new GoogleAuthProvider();
+getRedirectResult(auth).catch(err=>{
+  console.error("Login redirect error:", err);
+});
 
 const loginBtn=document.getElementById("loginBtn");
 const logoutBtn=document.getElementById("logoutBtn");
@@ -363,7 +366,7 @@ const userEmail=document.getElementById("userEmail");
 let cloudStore={}, unsubscribe=null;
 const nativeLS=window.localStorage;
 
-loginBtn.onclick=()=>signInWithPopup(auth,provider);
+loginBtn.onclick = () => signInWithRedirect(auth, provider);
 logoutBtn.onclick=()=>signOut(auth);
 
 onAuthStateChanged(auth,user=>{
