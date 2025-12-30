@@ -88,9 +88,7 @@ button:hover{opacity:.85}
   overflow:auto;
   max-height:420px;
 }
-.table-wrapper{
-  min-width:max-content;
-}
+.table-wrapper{min-width:max-content}
 .grid{
   display:grid;
   grid-template-columns:
@@ -141,14 +139,7 @@ button:hover{opacity:.85}
 }
 .delete:hover{color:var(--danger)}
 
-/* Freeze ONLY habit column */
-.row .cell:first-child{
-  position:sticky;
-  left:0;
-  z-index:6;
-  background:#1b2230;
-  box-shadow:2px 0 6px rgba(0,0,0,0.4);
-}
+.row .cell:first-child,
 .table-header div:first-child{
   position:sticky;
   left:0;
@@ -156,11 +147,7 @@ button:hover{opacity:.85}
   background:#1b2230;
   box-shadow:2px 0 6px rgba(0,0,0,0.4);
 }
-
-/* Today highlight */
-.today{
-  background:rgba(0,230,118,0.18)!important;
-}
+.today{background:rgba(0,230,118,0.18)!important}
 
 /* YEARLY */
 .yearly{
@@ -188,6 +175,11 @@ button:hover{opacity:.85}
   <select id="month"></select>
   <input id="newHabit" placeholder="Add new habit">
   <button onclick="addHabit()">Add</button>
+
+  <!-- 🔐 AUTH -->
+  <button id="loginBtn">Login</button>
+  <button id="logoutBtn" style="display:none">Logout</button>
+  <span id="userEmail" style="color:#9aa4b2;font-size:13px"></span>
 </div>
 
 <div class="card dashboard">
@@ -211,7 +203,13 @@ button:hover{opacity:.85}
 </div>
 
 <script>
-let habits = JSON.parse(localStorage.getItem("habit-list")) || [
+/* ================= USER STORAGE NAMESPACE ================= */
+let USER_KEY = "guest";
+function setUser(uid){ USER_KEY = uid || "guest"; }
+function ukey(k){ return USER_KEY + "::" + k; }
+
+/* ================= HABIT LOGIC (UNCHANGED) ================= */
+let habits = JSON.parse(localStorage.getItem(ukey("habit-list"))) || [
   "Daily Exercise","Drink 2L Water","Read 10 Pages",
   "Sleep Before 11 PM","Meditation","No Junk Food","Work on Goals"
 ];
@@ -230,7 +228,6 @@ for(let y=currentYear-5;y<=currentYear+10;y++){
   if(y===currentYear)o.selected=true;
   yearSel.appendChild(o);
 }
-
 for(let m=0;m<12;m++){
   let o=document.createElement("option");
   o.value=m;
@@ -241,14 +238,13 @@ for(let m=0;m<12;m++){
 
 function daysInMonth(y,m){return new Date(y,m+1,0).getDate();}
 function key(y,m,h,d){return `${y}-${m}-${h}-${d}`;}
-
 function isTodayCell(y,m,d){
   const t=new Date();
   return y===t.getFullYear() && m===t.getMonth() && d===t.getDate();
 }
 
 function saveHabits(){
-  localStorage.setItem("habit-list",JSON.stringify(habits));
+  localStorage.setItem(ukey("habit-list"),JSON.stringify(habits));
 }
 
 function addHabit(){
@@ -267,7 +263,7 @@ function removeHabit(h){
 function toggle(h,d){
   let y=+yearSel.value,m=+monthSel.value;
   let k=key(y,m,h,d);
-  localStorage.setItem(k,localStorage.getItem(k)!=="true");
+  localStorage.setItem(ukey(k), localStorage.getItem(ukey(k))!=="true");
   render();
 }
 
@@ -281,29 +277,25 @@ function render(){
 
   header.innerHTML+="<div>Habit</div>";
   for(let d=1;d<=days;d++){
-    const cls=isTodayCell(y,m,d)?"today":"";
-    header.innerHTML+=`<div class="${cls}">${d}</div>`;
+    header.innerHTML+=`<div class="${isTodayCell(y,m,d)?"today":""}">${d}</div>`;
   }
   header.innerHTML+="<div>%</div><div>🗑️</div>";
 
   let best={n:"-",v:-1},worst={n:"-",v:101},total=0;
 
   habits.forEach(h=>{
-    let done=0;
-    let row=document.createElement("div");
+    let done=0,row=document.createElement("div");
     row.className="grid row";
     row.style.setProperty("--days",days);
-
     row.innerHTML+=`<div class="cell habit">${h}</div>`;
 
     for(let d=1;d<=days;d++){
-      let c=localStorage.getItem(key(y,m,h,d))==="true";
+      let c=localStorage.getItem(ukey(key(y,m,h,d)))==="true";
       if(c)done++;
-      const tCls=isTodayCell(y,m,d)?"today":"";
       row.innerHTML+=`
-        <div class="cell ${tCls}">
-          <div class="box ${c?"checked":""}" onclick="toggle('${h}',${d})"></div>
-        </div>`;
+      <div class="cell ${isTodayCell(y,m,d)?"today":""}">
+        <div class="box ${c?"checked":""}" onclick="toggle('${h}',${d})"></div>
+      </div>`;
     }
 
     let p=Math.round(done/days*100);
@@ -330,7 +322,7 @@ function yearly(y){
     habits.forEach(h=>{
       let d=0;
       for(let i=1;i<=days;i++)
-        if(localStorage.getItem(key(y,m,h,i))==="true")d++;
+        if(localStorage.getItem(ukey(key(y,m,h,i)))==="true")d++;
       sum+=d/days*100;
     });
     box.innerHTML+=`<div class="month-box">
@@ -343,10 +335,72 @@ function yearly(y){
 yearSel.onchange=render;
 monthSel.onchange=render;
 render();
+</script>
 
-if("serviceWorker"in navigator){
-  navigator.serviceWorker.register("service-worker.js");
-}
+<!-- ================= FIREBASE AUTH + FIRESTORE ================= -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, onSnapshot }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDNoBvgu7W4txBT-nbnho_ILwU462bhlC4",
+  authDomain: "habit-tracker-de698.firebaseapp.com",
+  projectId: "habit-tracker-de698"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+
+const loginBtn=document.getElementById("loginBtn");
+const logoutBtn=document.getElementById("logoutBtn");
+const userEmail=document.getElementById("userEmail");
+
+let cloudStore={}, unsubscribe=null;
+const nativeLS=window.localStorage;
+
+loginBtn.onclick=()=>signInWithPopup(auth,provider);
+logoutBtn.onclick=()=>signOut(auth);
+
+onAuthStateChanged(auth,user=>{
+  if(unsubscribe)unsubscribe();
+
+  if(user){
+    setUser(user.uid);
+    loginBtn.style.display="none";
+    logoutBtn.style.display="inline-block";
+    userEmail.textContent=user.email;
+
+    const ref=doc(db,"users",user.uid);
+    unsubscribe=onSnapshot(ref,snap=>{
+      cloudStore=snap.data()||{};
+      habits=JSON.parse(cloudStore[ukey("habit-list")]||"null")||habits;
+      render();
+    });
+  }else{
+    setUser(null);
+    cloudStore={};
+    loginBtn.style.display="inline-block";
+    logoutBtn.style.display="none";
+    userEmail.textContent="";
+    render();
+  }
+});
+
+/* STORAGE BRIDGE */
+window.localStorage={
+  getItem:k=>k in cloudStore?cloudStore[k]:nativeLS.getItem(k),
+  setItem(k,v){
+    cloudStore[k]=v;
+    USER_KEY!=="guest"
+      ?setDoc(doc(db,"users",USER_KEY),{[k]:v},{merge:true})
+      :nativeLS.setItem(k,v);
+  }
+};
 </script>
 
 </body>
