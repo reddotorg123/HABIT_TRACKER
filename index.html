@@ -347,33 +347,6 @@ button:hover{opacity:.85}
   background:rgba(0,0,0,0.15);
 }
 
-/* Light theme background */
-:root[data-theme="light"] .row .cell:first-child,
-:root[data-theme="light"] .table-header div:first-child{
-  background:#ffffff;
-}
-
-/* Hard mask layer */
-.row .cell:first-child::before,
-.table-header div:first-child::before{
-  content:"";
-  position:absolute;
-  inset:0;
-  background:inherit;
-  z-index:-1;
-}
-
-/* Divider line */
-.row .cell:first-child::after,
-.table-header div:first-child::after{
-  content:"";
-  position:absolute;
-  top:0;
-  right:0;
-  width:1px;
-  height:100%;
-  background:rgba(0,0,0,0.15);
-}
 
 </style>
 </head>
