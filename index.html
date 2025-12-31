@@ -255,6 +255,30 @@ button:hover{opacity:.85}
     justify-content:center;
   }
 }
+/* ===== LIGHT THEME VISIBILITY FIX (FINAL) ===== */
+
+/* Habit name column text */
+:root[data-theme="light"] .row .cell:first-child,
+:root[data-theme="light"] .table-header div:first-child{
+  background:#ffffff !important;
+  color:#000000 !important;
+}
+
+/* Normal unchecked boxes */
+:root[data-theme="light"] .box{
+  background:#d0d4e0 !important;
+}
+
+/* ✅ Checked boxes – SAME green as dark theme */
+:root[data-theme="light"] .box.checked{
+  background:var(--accent) !important;
+  box-shadow:0 0 6px #00e67688;
+}
+
+/* Improve grid contrast */
+:root[data-theme="light"] .cell{
+  border-right:1px solid #ddd;
+}
 
 </style>
 </head>
@@ -276,7 +300,8 @@ button:hover{opacity:.85}
   <button onclick="exportCSV()">Export CSV</button>
   <button onclick="toggleTheme()">🌗</button>
   <button onclick="enableReminder()">🔔</button>
-  <button id="installBtn" style="display:none">📲 Install App</button>
+  <button id="installBtn">📲 Install App</button>
+
 
   <!-- Auth -->
   <button id="loginBtn">Login</button>
@@ -585,6 +610,42 @@ installBtn.addEventListener("click", async () => {
   deferredPrompt = null;
   installBtn.style.display = "none";
 });
+  <script>
+/* ===== PWA INSTALL FIX (RELIABLE) ===== */
+const installBtn = document.getElementById("installBtn");
+let deferredPrompt = null;
+
+/* Hide button if already installed */
+if (window.matchMedia('(display-mode: standalone)').matches) {
+  installBtn.style.display = "none";
+}
+
+/* Capture install event */
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = "inline-block";
+});
+
+/* Fallback: always show button on supported browsers */
+window.addEventListener("load", () => {
+  if (!deferredPrompt && 'serviceWorker' in navigator) {
+    installBtn.style.display = "inline-block";
+  }
+});
+
+installBtn.addEventListener("click", async () => {
+  if (!deferredPrompt) {
+    alert("Use browser menu → Add to Home Screen");
+    return;
+  }
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  installBtn.style.display = "none";
+});
+</script>
+
 </script>
 
 </body>
