@@ -302,23 +302,40 @@ button:hover{opacity:.85}
   border:1px solid #d6dbea;
   box-shadow:0 2px 6px rgba(0,0,0,0.04);
 }
-/* ===== STICKY HABIT COLUMN MASK FIX ===== */
+/* ===== STICKY HABIT COLUMN MASK FIX (FINAL) ===== */
 
-/* Mask scrolling content under sticky habit column */
+/* Ensure each cell can mask content */
+.cell{
+  position:relative;
+}
+
+/* Sticky habit column */
 .row .cell:first-child,
 .table-header div:first-child{
-  background:var(--card) !important;
-  z-index:20;                 /* Above scrolling cells */
-  overflow:hidden;            /* Clip anything behind */
+  position:sticky;
+  left:0;
+  z-index:30;
+  background:var(--card);
+  overflow:hidden;
 }
 
-/* Stronger mask in light theme */
+/* Light theme background */
 :root[data-theme="light"] .row .cell:first-child,
 :root[data-theme="light"] .table-header div:first-child{
-  background:#ffffff !important;
+  background:#ffffff;
 }
 
-/* Add visual separator so it feels intentional */
+/* Hard mask layer */
+.row .cell:first-child::before,
+.table-header div:first-child::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:inherit;
+  z-index:-1;
+}
+
+/* Divider line */
 .row .cell:first-child::after,
 .table-header div:first-child::after{
   content:"";
@@ -327,14 +344,7 @@ button:hover{opacity:.85}
   right:0;
   width:1px;
   height:100%;
-  background:rgba(0,0,0,0.08);
-}
-
-/* Ensure positioning context for pseudo-element */
-.row .cell:first-child,
-.table-header div:first-child{
-  position:sticky;
-  left:0;
+  background:rgba(0,0,0,0.15);
 }
 
 </style>
@@ -650,41 +660,23 @@ localStorage.setItem=(k,v)=>{
 };
 </script>
 <script>
-/* ================= PWA INSTALL SUPPORT ================= */
-let deferredPrompt;
-const installBtn = document.getElementById("installBtn");
-
-window.addEventListener("beforeinstallprompt", (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  installBtn.style.display = "inline-block";
-});
-
-installBtn.addEventListener("click", async () => {
-  if (!deferredPrompt) return;
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  installBtn.style.display = "none";
-});
-  <script>
-/* ===== PWA INSTALL FIX (RELIABLE) ===== */
-const installBtn = document.getElementById("installBtn");
+/* ===== PWA INSTALL (FINAL, SINGLE SCRIPT) ===== */
 let deferredPrompt = null;
+const installBtn = document.getElementById("installBtn");
 
 /* Hide button if already installed */
 if (window.matchMedia('(display-mode: standalone)').matches) {
   installBtn.style.display = "none";
 }
 
-/* Capture install event */
+/* Capture install prompt */
 window.addEventListener("beforeinstallprompt", (e) => {
   e.preventDefault();
   deferredPrompt = e;
   installBtn.style.display = "inline-block";
 });
 
-/* Fallback: always show button on supported browsers */
+/* Fallback visibility */
 window.addEventListener("load", () => {
   if (!deferredPrompt && 'serviceWorker' in navigator) {
     installBtn.style.display = "inline-block";
@@ -701,8 +693,6 @@ installBtn.addEventListener("click", async () => {
   deferredPrompt = null;
   installBtn.style.display = "none";
 });
-</script>
-
 </script>
 
 </body>
