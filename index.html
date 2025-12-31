@@ -346,6 +346,18 @@ button:hover{opacity:.85}
   height:100%;
   background:rgba(0,0,0,0.15);
 }
+/* ===== LIGHT THEME GRID VISIBILITY FIX (ONLY GRID) ===== */
+
+/* Vertical grid lines (date columns) */
+:root[data-theme="light"] .table-header div,
+:root[data-theme="light"] .cell{
+  border-right: 1px solid #cfd4e0;
+}
+
+/* Horizontal grid lines (rows) */
+:root[data-theme="light"] .row{
+  border-bottom: 1px solid #e6eaf2;
+}
 
 
 </style>
