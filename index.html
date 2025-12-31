@@ -196,6 +196,66 @@ button:hover{opacity:.85}
   padding:10px;
   text-align:center;
 }
+/* ================= LIGHT THEME VISIBILITY FIX ================= */
+:root[data-theme="light"] body{
+  color:#111;
+}
+
+:root[data-theme="light"] header{
+  background:linear-gradient(135deg,#e3e7f0,#cfd8ea);
+  color:#000;
+}
+
+:root[data-theme="light"] .card,
+:root[data-theme="light"] .stat,
+:root[data-theme="light"] .table-header,
+:root[data-theme="light"] .month-box{
+  background:#ffffff;
+  color:#000;
+}
+
+:root[data-theme="light"] .row:nth-child(even){
+  background:#f0f2f8;
+}
+:root[data-theme="light"] .row:nth-child(odd){
+  background:#ffffff;
+}
+
+:root[data-theme="light"] input,
+:root[data-theme="light"] select,
+:root[data-theme="light"] button{
+  background:#ffffff;
+  color:#000;
+  border:1px solid #ccc;
+}
+
+:root[data-theme="light"] .box{
+  background:#d0d4e0;
+}
+
+:root[data-theme="light"] .today{
+  background:rgba(0,230,118,0.25)!important;
+}
+/* ================= MOBILE CONTROLS FIX ================= */
+@media (max-width: 768px){
+  .controls{
+    flex-direction:column;
+    align-items:stretch;
+    gap:8px;
+  }
+
+  .controls select,
+  .controls input,
+  .controls button{
+    width:100%;
+  }
+
+  #userProfile{
+    margin-left:0 !important;
+    justify-content:center;
+  }
+}
+
 </style>
 </head>
 
@@ -216,6 +276,7 @@ button:hover{opacity:.85}
   <button onclick="exportCSV()">Export CSV</button>
   <button onclick="toggleTheme()">🌗</button>
   <button onclick="enableReminder()">🔔</button>
+  <button id="installBtn" style="display:none">📲 Install App</button>
 
   <!-- Auth -->
   <button id="loginBtn">Login</button>
@@ -505,6 +566,25 @@ localStorage.setItem=(k,v)=>{
   setDoc(doc(db,"users",USER_KEY),{[k]:v},{merge:true});
  }
 };
+</script>
+<script>
+/* ================= PWA INSTALL SUPPORT ================= */
+let deferredPrompt;
+const installBtn = document.getElementById("installBtn");
+
+window.addEventListener("beforeinstallprompt", (e) => {
+  e.preventDefault();
+  deferredPrompt = e;
+  installBtn.style.display = "inline-block";
+});
+
+installBtn.addEventListener("click", async () => {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  installBtn.style.display = "none";
+});
 </script>
 
 </body>
