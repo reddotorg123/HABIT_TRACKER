@@ -302,9 +302,14 @@ button:hover{opacity:.85}
   border:1px solid #d6dbea;
   box-shadow:0 2px 6px rgba(0,0,0,0.04);
 }
-/* ===== STICKY HABIT COLUMN MASK FIX (FINAL) ===== */
+/* ===== STICKY HABIT COLUMN – HARD MASK FIX (FINAL) ===== */
 
-/* Ensure each cell can mask content */
+/* Grid context */
+.grid{
+  position:relative;
+}
+
+/* Make cells positioning-safe */
 .cell{
   position:relative;
 }
@@ -314,9 +319,39 @@ button:hover{opacity:.85}
 .table-header div:first-child{
   position:sticky;
   left:0;
-  z-index:30;
+  z-index:50;
   background:var(--card);
-  overflow:hidden;
+}
+
+/* Light theme */
+:root[data-theme="light"] .row .cell:first-child,
+:root[data-theme="light"] .table-header div:first-child{
+  background:#ffffff;
+}
+
+/* HARD MASK OVERLAY */
+.row .cell:first-child::before,
+.table-header div:first-child::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:-999px;              /* extend left */
+  width:1200px;             /* extend right to cover scroll */
+  height:100%;
+  background:inherit;
+  z-index:-1;
+}
+
+/* Divider */
+.row .cell:first-child::after,
+.table-header div:first-child::after{
+  content:"";
+  position:absolute;
+  top:0;
+  right:0;
+  width:1px;
+  height:100%;
+  background:rgba(0,0,0,0.15);
 }
 
 /* Light theme background */
