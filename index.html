@@ -473,23 +473,30 @@ function addHabit(){
  if(!i.value.trim())return;
  habits.push(i.value.trim());
  saveHabits();
- i.value="";
- render();
+syncToCloud(ukey("habit-list"), JSON.stringify(habits));
+i.value="";
+render();
+
 }
 
 function removeHabit(h){
  if(!confirm(`Delete "${h}"?`))return;
  habits=habits.filter(x=>x!==h);
  saveHabits();
- render();
+syncToCloud(ukey("habit-list"), JSON.stringify(habits));
+render();
+;
 }
 
 function toggle(h,d){
  const y=+yearSel.value;
  const m=+monthSel.value;
  const k=key(y,m,h,d);
- localStorage.setItem(ukey(k), localStorage.getItem(ukey(k))!=="true");
- render();
+const newValue = localStorage.getItem(ukey(k)) !== "true";
+localStorage.setItem(ukey(k), newValue);
+syncToCloud(ukey(k), newValue);
+render();
+
 }
 
 /* RENDER */
@@ -624,6 +631,21 @@ const app=initializeApp({
 const auth=getAuth(app);
 const db=getFirestore(app);
 const provider=new GoogleAuthProvider();
+  async function syncToCloud(key, value) {
+  if (USER_KEY === "guest") return;
+
+  await setDoc(
+    doc(db, "users", USER_KEY),
+    {
+      [key]: {
+        value: value,
+        updatedAt: Date.now()
+      }
+    },
+    { merge: true }
+  );
+}
+
 
 const loginBtn=document.getElementById("loginBtn");
 const logoutBtn=document.getElementById("logoutBtn");
@@ -651,9 +673,15 @@ onAuthStateChanged(auth,user=>{
   unsub=onSnapshot(ref,snap=>{
    const data=snap.data();
    if(!data)return;
-   Object.keys(data).forEach(k=>{
-    localStorage.setItem(k,data[k]);
-   });
+   Object.keys(data).forEach(k => {
+  const cloud = data[k];
+  const local = localStorage.getItem(k);
+
+  if (!local || cloud.updatedAt > (JSON.parse(local || "{}")?.updatedAt || 0)) {
+    localStorage.setItem(k, cloud.value);
+  }
+});
+
    habits=JSON.parse(localStorage.getItem(ukey("habit-list")))||habits;
    render();
   });
@@ -666,14 +694,7 @@ onAuthStateChanged(auth,user=>{
  }
 });
 
-/* CLOUD AUTOSAVE */
-const nativeSet=localStorage.setItem.bind(localStorage);
-localStorage.setItem=(k,v)=>{
- nativeSet(k,v);
- if(USER_KEY!=="guest"){
-  setDoc(doc(db,"users",USER_KEY),{[k]:v},{merge:true});
- }
-};
+
 </script>
 <script>
 /* ===== PWA INSTALL (FINAL, SINGLE SCRIPT) ===== */
