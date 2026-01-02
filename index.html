@@ -631,7 +631,7 @@ const app=initializeApp({
 const auth=getAuth(app);
 const db=getFirestore(app);
 const provider=new GoogleAuthProvider();
-  async function syncToCloud(key, value) {
+ async function syncToCloudInternal(key, value) {
   if (USER_KEY === "guest") return;
 
   await setDoc(
@@ -645,6 +645,9 @@ const provider=new GoogleAuthProvider();
     { merge: true }
   );
 }
+
+/* ✅ MAKE IT GLOBAL */
+window.syncToCloud = syncToCloudInternal;
 
 
 const loginBtn=document.getElementById("loginBtn");
@@ -677,9 +680,10 @@ onAuthStateChanged(auth,user=>{
   const cloud = data[k];
   const local = localStorage.getItem(k);
 
-  if (!local || cloud.updatedAt > (JSON.parse(local || "{}")?.updatedAt || 0)) {
-    localStorage.setItem(k, cloud.value);
-  }
+ Object.keys(data).forEach(k => {
+  localStorage.setItem(k, data[k].value);
+});
+
 });
 
    habits=JSON.parse(localStorage.getItem(ukey("habit-list")))||habits;
