@@ -3,7 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <title>HABIT TRACKER</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
 
 <link rel="icon" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -33,21 +36,32 @@
   --text:#000000;
 }
 
-*{box-sizing:border-box}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+
+html{
+  scroll-behavior:smooth;
+}
 
 body{
   margin:0;
   font-family:Inter,Segoe UI,Arial,sans-serif;
   background:var(--bg);
   color:var(--text);
+  padding-bottom:env(safe-area-inset-bottom,0);
+  -webkit-overflow-scrolling:touch;
+  overflow-x:hidden;
 }
 
 header{
   padding:18px;
+  padding-top:calc(18px + env(safe-area-inset-top,0));
   text-align:center;
   font-size:22px;
   font-weight:800;
   background:linear-gradient(135deg,#141e30,#243b55);
+  position:sticky;
+  top:0;
+  z-index:100;
 }
 
 .container{
@@ -56,6 +70,7 @@ header{
   padding:16px;
   display:grid;
   gap:16px;
+  padding-bottom:80px;
 }
 
 .card{
@@ -76,9 +91,11 @@ input,select,button{
   background:#1b2230;
   color:var(--text);
   border:1px solid var(--border);
-  padding:8px 12px;
+  padding:10px 14px;
   border-radius:10px;
-  font-size:14px;
+  font-size:15px;
+  min-height:44px;
+  touch-action:manipulation;
 }
 
 button{cursor:pointer}
@@ -110,6 +127,7 @@ button:hover{opacity:.85}
   border:1px solid var(--border);
   overflow:auto;
   max-height:420px;
+  -webkit-overflow-scrolling:touch;
 }
 
 .table-wrapper{min-width:max-content}
@@ -144,6 +162,9 @@ button:hover{opacity:.85}
   padding:8px;
   text-align:center;
   border-right:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  justify-content:center;
 }
 
 .habit{
@@ -154,16 +175,22 @@ button:hover{opacity:.85}
 }
 
 .box{
-  width:22px;
-  height:22px;
-  border-radius:6px;
+  width:28px;
+  height:28px;
+  border-radius:8px;
   background:#2a3344;
   cursor:pointer;
+  transition:transform 0.15s ease, background 0.2s ease;
+  margin:auto;
+}
+
+.box:active{
+  transform:scale(0.85);
 }
 
 .box.checked{
   background:var(--accent);
-  box-shadow:0 0 6px #00e67688;
+  box-shadow:0 0 8px #00e67688;
 }
 
 .delete{
@@ -232,8 +259,25 @@ button:hover{opacity:.85}
 :root[data-theme="light"] .today{
   background:rgba(0,230,118,0.25)!important;
 }
-/* ================= MOBILE CONTROLS FIX ================= */
+/* ================= MOBILE RESPONSIVE ================= */
 @media (max-width: 768px){
+  header{
+    font-size:18px;
+    padding:14px 12px;
+    padding-top:calc(14px + env(safe-area-inset-top,0));
+  }
+
+  .container{
+    padding:10px;
+    gap:10px;
+    padding-bottom:90px;
+  }
+
+  .card{
+    padding:12px;
+    border-radius:14px;
+  }
+
   .controls{
     flex-direction:column;
     align-items:stretch;
@@ -244,11 +288,167 @@ button:hover{opacity:.85}
   .controls input,
   .controls button{
     width:100%;
+    font-size:15px;
+    padding:12px 14px;
+    min-height:48px;
   }
 
   #userProfile{
     margin-left:0 !important;
     justify-content:center;
+  }
+
+  /* Dashboard */
+  .dashboard{
+    grid-template-columns:1fr !important;
+    gap:8px;
+  }
+
+  .stat{
+    padding:14px;
+    border-radius:12px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    font-size:15px;
+  }
+
+  .stat span{
+    margin-top:0 !important;
+    font-size:20px;
+  }
+
+  /* Table mobile */
+  .table-shell{
+    max-height:55vh;
+    border-radius:14px;
+  }
+
+  .grid{
+    grid-template-columns:
+      140px
+      repeat(var(--days), 40px)
+      55px
+      45px !important;
+  }
+
+  .table-header div{
+    padding:8px 4px;
+    font-size:12px;
+  }
+
+  .cell{
+    padding:6px 4px;
+    font-size:13px;
+  }
+
+  .habit{
+    font-size:13px;
+    padding-left:4px !important;
+  }
+
+  .box{
+    width:30px;
+    height:30px;
+    border-radius:8px;
+  }
+
+  .delete{
+    font-size:16px;
+  }
+
+  /* Yearly */
+  .yearly{
+    grid-template-columns:repeat(4,1fr) !important;
+    gap:8px;
+  }
+
+  .month-box{
+    padding:8px;
+    border-radius:10px;
+    font-size:13px;
+  }
+
+  h3{
+    font-size:16px;
+    margin:8px 0;
+  }
+}
+
+/* Extra small screens */
+@media (max-width: 400px){
+  .grid{
+    grid-template-columns:
+      110px
+      repeat(var(--days), 36px)
+      50px
+      40px !important;
+  }
+
+  .box{
+    width:26px;
+    height:26px;
+  }
+
+  .habit{
+    font-size:12px;
+  }
+
+  .yearly{
+    grid-template-columns:repeat(3,1fr) !important;
+  }
+}
+
+/* Bottom mobile bar */
+.mobile-bar{
+  display:none;
+  position:fixed;
+  bottom:0;
+  left:0;
+  right:0;
+  background:linear-gradient(135deg,#141e30,#243b55);
+  border-top:1px solid var(--border);
+  padding:8px 12px;
+  padding-bottom:calc(8px + env(safe-area-inset-bottom,0));
+  z-index:200;
+  gap:6px;
+  justify-content:space-around;
+  align-items:center;
+}
+
+.mobile-bar button{
+  flex:1;
+  min-height:42px;
+  font-size:18px;
+  background:rgba(255,255,255,0.08);
+  border:none;
+  border-radius:12px;
+  padding:8px 4px;
+  color:#fff;
+}
+
+.mobile-bar button:active{
+  background:rgba(255,255,255,0.18);
+}
+
+:root[data-theme="light"] .mobile-bar{
+  background:linear-gradient(135deg,#e3e7f0,#cfd8ea);
+  border-top:1px solid #ccc;
+}
+
+:root[data-theme="light"] .mobile-bar button{
+  background:rgba(0,0,0,0.06);
+  color:#000;
+}
+
+@media (max-width: 768px){
+  .mobile-bar{
+    display:flex;
+  }
+
+  /* Hide these buttons from controls on mobile */
+  .controls .desktop-only{
+    display:none !important;
   }
 }
 /* ===== LIGHT THEME VISIBILITY FIX (FINAL) ===== */
@@ -376,22 +576,21 @@ button:hover{opacity:.85}
 <div class="card controls">
   <select id="year"></select>
   <select id="month"></select>
-  <input id="newHabit" placeholder="Add new habit">
-  <button onclick="addHabit()">Add</button>
+  <input id="newHabit" placeholder="Add new habit" enterkeyhint="done">
+  <button onclick="addHabit()">➕ Add</button>
 
-  <!-- Enhancements -->
-  <button onclick="exportCSV()">Export CSV</button>
-  <button onclick="toggleTheme()">🌗</button>
-  <button onclick="enableReminder()">🔔</button>
-  <button id="installBtn">📲 Install App</button>
-
+  <!-- Enhancements (desktop only) -->
+  <button class="desktop-only" onclick="exportCSV()">Export CSV</button>
+  <button class="desktop-only" onclick="toggleTheme()">🌗</button>
+  <button class="desktop-only" onclick="enableReminder()">🔔</button>
+  <button class="desktop-only" id="installBtn">📲 Install App</button>
 
   <!-- Auth -->
   <button id="loginBtn">Login</button>
   <button id="logoutBtn" style="display:none">Logout</button>
 
   <div id="userProfile" style="display:none;align-items:center;gap:8px;margin-left:auto">
-    <img id="userPic" style="width:32px;height:32px;border-radius:50%">
+    <img id="userPic" style="width:32px;height:32px;border-radius:50%" alt="User">
     <span id="userName" style="font-size:13px;color:#9aa4b2"></span>
   </div>
 </div>
@@ -417,6 +616,14 @@ button:hover{opacity:.85}
   <div id="yearly" class="yearly"></div>
 </div>
 
+</div>
+
+<!-- MOBILE BOTTOM BAR -->
+<div class="mobile-bar">
+  <button onclick="toggleTheme()" title="Theme">🌗</button>
+  <button onclick="exportCSV()" title="Export">📤</button>
+  <button onclick="enableReminder()" title="Reminder">🔔</button>
+  <button onclick="document.getElementById('installBtn').click()" title="Install">📲</button>
 </div>
 
 <!-- ================= EXISTING CORE LOGIC (UNCHANGED) ================= -->
