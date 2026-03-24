@@ -390,60 +390,46 @@ const app = initializeApp({
 });
 const auth = getAuth(app), db = getFirestore(app), provider = new GoogleAuthProvider();
 
-window.syncToCloud = async (k, v) => {
+async function syncToCloudInternal(key, value) {
   if (USER_KEY === "guest") return;
-  try { await setDoc(doc(db,"users",USER_KEY),{[k]:{value:v, updatedAt:Date.now()}},{merge:true}); } 
-  catch(e) { console.error("Sync fail", e); }
-};
+  try {
+    await setDoc(doc(db, "users", USER_KEY), { [key]: { value, updatedAt: Date.now() } }, { merge: true });
+  } catch (e) {
+    console.error("Sync error:", e);
+  }
+}
+window.syncToCloud = syncToCloudInternal;
 
 const loginBtn = document.getElementById("loginBtn"), logoutBtn = document.getElementById("logoutBtn");
-const prof = document.getElementById("userProfile"), pic = document.getElementById("userPic"), name = document.getElementById("userName");
+const userProfile = document.getElementById("userProfile"), userPic = document.getElementById("userPic"), userName = document.getElementById("userName");
 
-loginBtn.onclick = () => {
-  loginBtn.disabled = true; loginBtn.innerText = "AUTHENTICATING...";
-  console.log("Auth Start: Google Popup Requested...");
-  
-  // Safety timeout to reset button if popup is blocked or hangs
-  const resetTimer = setTimeout(() => {
-    if(loginBtn.innerText === "AUTHENTICATING...") {
-      loginBtn.disabled = false; loginBtn.innerText = "AUTH WITH GOOGLE";
-      console.warn("Auth Timeout: Popup may have been blocked or closed.");
-    }
-  }, 10000);
-
-  signInWithPopup(auth, provider)
-  .then(() => { clearTimeout(resetTimer); console.log("Auth Success!"); })
-  .catch(e => {
-    clearTimeout(resetTimer);
-    loginBtn.disabled = false; loginBtn.innerText = "AUTH WITH GOOGLE";
-    console.error("Auth Fail:", e.code, e.message);
-    if(e.code === 'auth/unauthorized-domain') 
-      alert("DOMAIN ERROR: Go to Firebase Console > Auth > Settings > Authorized Domains and add: " + window.location.host);
-    else if(e.code === 'auth/popup-blocked')
-      alert("POPUP BLOCKED: Please enable popups for this site or use a different browser.");
-    else alert("Login Error: " + e.message);
-  });
-};
-logoutBtn.onclick = () => { console.log("User Logged Out"); signOut(auth); };
+loginBtn.onclick = () => signInWithPopup(auth, provider).catch(e => {
+  if (e.code === 'auth/unauthorized-domain') alert("Authorize your domain in Firebase Console.");
+  else alert("Error: " + e.message);
+});
+logoutBtn.onclick = () => signOut(auth);
 
 let unsub = null;
 onAuthStateChanged(auth, user => {
-  if(unsub) unsub();
-  // Ensure button resets if user is found or if login fails
-  loginBtn.disabled = false; loginBtn.innerText = "AUTH WITH GOOGLE";
-
-  if(user) {
-    setUser(user.uid); console.log("Session Active: " + user.uid); loginBtn.style.display="none"; logoutBtn.style.display="block";
-    prof.style.display="flex"; pic.src=user.photoURL; name.textContent=user.displayName;
-    unsub = onSnapshot(doc(db,"users",user.uid), snap => {
-      const data = snap.data(); if (!data) return;
-      Object.keys(data).forEach(k => { if (data[k] && data[k].value!==undefined) localStorage.setItem(k, data[k].value) });
+  if (unsub) unsub();
+  if (user) {
+    setUser(user.uid);
+    loginBtn.style.display = "none"; logoutBtn.style.display = "block";
+    if (userProfile) {
+      userProfile.style.display = "flex"; userPic.src = user.photoURL; userName.textContent = user.displayName;
+    }
+    unsub = onSnapshot(doc(db, "users", user.uid), snap => {
+      const data = snap.data();
+      if (!data) return;
+      Object.keys(data).forEach(k => { if (data[k] && data[k].value !== undefined) localStorage.setItem(k, data[k].value) });
       habits = JSON.parse(localStorage.getItem(ukey("habit-list"))) || habits;
       render();
     });
   } else {
-    setUser(null); loginBtn.style.display="block"; loginBtn.disabled=false; loginBtn.innerText="AUTH WITH GOOGLE";
-    logoutBtn.style.display="none"; prof.style.display="none"; render();
+    setUser(null);
+    loginBtn.style.display = "block"; logoutBtn.style.display = "none";
+    if (userProfile) userProfile.style.display = "none";
+    render();
   }
 });
 </script>
