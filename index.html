@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>HABIT TRACKER | TERMINAL</title>
+<title>HABIT TRACKER</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#000000">
+<meta name="theme-color" content="#0b0f14">
 
-<!-- Hacker Fonts -->
+<!-- Google Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 
 <link rel="icon" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -19,20 +19,30 @@
 
 <style>
 :root {
-  --bg: #000000;
-  --card: rgba(0, 0, 0, 0.9);
-  --rowA: rgba(0, 0, 0, 0.9);
-  --rowB: rgba(0, 0, 0, 0.9);
-  --border: #008f11;
-  --text: #00ff41;
-  --muted: #008f11;
-  --accent: #00ff41;
-  --accent-glow: 0 0 12px #00ff41;
-  
-  --amber: #ffb000;
-  --cyan: #00e5ff;
-  --danger: #ff0000;
-  --glass: rgba(0, 0, 0, 0.95);
+  --bg: #0b0f14;
+  --card: #141922;
+  --rowA: #1a202c;
+  --rowB: #141922;
+  --border: rgba(255, 255, 255, 0.08);
+  --text: #ffffff;
+  --muted: #94a3b8;
+  --accent: #10b981;
+  --accent-glow: rgba(16, 185, 129, 0.4);
+  --danger: #ef4444;
+  --glass: rgba(20, 25, 34, 0.7);
+}
+
+:root[data-theme="light"] {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --rowA: #f1f5f9;
+  --rowB: #ffffff;
+  --border: #e2e8f0;
+  --text: #1e293b;
+  --muted: #64748b;
+  --accent: #059669;
+  --accent-glow: rgba(5, 150, 105, 0.2);
+  --glass: rgba(255, 255, 255, 0.8);
 }
 
 * {
@@ -45,229 +55,219 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family: 'JetBrains Mono', 'Courier New', monospace;
+  font-family: 'Outfit', sans-serif;
   background: var(--bg);
   color: var(--text);
   overflow-x: hidden;
 }
 
-#matrix-bg {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: -1;
-  opacity: 0.15;
-}
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-/* Header & Digital Effect */
+/* Header & Glass Effect */
 header {
-  padding: env(safe-area-inset-top, 0) 24px 12px;
+  padding: env(safe-area-inset-top, 0) 24px 20px;
   background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
-  z-index: 300;
+  z-index: 100;
   display: flex;
   flex-direction: column;
   align-items: center;
-  border-bottom: 2px solid var(--cyan);
-  box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
+  border-bottom: 1px solid var(--border);
 }
 
 header h1 {
-  margin: 15px 0 5px;
-  font-size: 24px;
+  margin: 20px 0 10px;
+  font-size: 26px;
   font-weight: 800;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--cyan);
-  text-shadow: 0 0 10px var(--cyan);
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #fff 30%, var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+:root[data-theme="light"] header h1 {
+  background: linear-gradient(135deg, #1e293b 30%, var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px 12px 140px;
+  padding: 24px 16px 120px;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
 }
 
+/* Auth Profile Styles */
 #userProfile {
   display: none;
   align-items: center;
   gap: 10px;
-  padding: 6px 12px;
-  background: rgba(0, 229, 255, 0.1);
-  border: 1px solid var(--cyan);
-  margin-top: 5px;
+  padding: 8px 12px;
+  background: var(--border);
+  border-radius: 50px;
+  margin-top: 10px;
 }
 
 #userPic {
-  width: 24px;
-  height: 24px;
-  border-radius: 0;
-  border: 1px solid var(--cyan);
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
 }
 
-#userName { font-size: 11px; font-weight: 400; color: var(--cyan); }
+#userName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
+}
 
-/* Terminal Cards */
+/* Cards & Controls */
 .card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 0;
-  padding: 16px;
-  box-shadow: inset 0 0 15px rgba(0, 255, 65, 0.05);
-  position: relative;
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  animation: fadeIn 0.5s ease backwards;
 }
-
-.card::before {
-  content: "";
-  position: absolute;
-  top: 2px;
-  left: 2px;
-  right: 2px;
-  height: 1px;
-  background: rgba(0, 255, 65, 0.2);
-}
-
-.controls-card { border-color: var(--cyan); box-shadow: inset 0 0 15px rgba(0, 229, 255, 0.05); }
-.yearly-card { border-color: var(--amber); box-shadow: inset 0 0 15px rgba(255, 176, 0, 0.05); }
 
 .controls {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: 12px;
 }
 
-#newHabit { grid-column: span 2; border-color: var(--cyan); }
+.controls input { grid-column: span 2; }
 
 input, select, button {
-  background: black;
+  background: var(--rowA);
   color: var(--text);
   border: 1px solid var(--border);
-  padding: 10px;
-  border-radius: 0;
+  padding: 12px 16px;
+  border-radius: 14px;
   font-family: inherit;
-  font-size: 14px;
+  font-size: 15px;
+  min-height: 48px;
+  transition: all 0.2s;
 }
-
-input::placeholder { color: var(--muted); opacity: 0.5; }
-input:focus, select:focus { border-color: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
 
 button {
   cursor: pointer;
-  font-weight: 700;
-  text-transform: uppercase;
-}
-
-button.primary {
-  background: var(--cyan);
-  color: black;
-  grid-column: span 2;
-  box-shadow: 0 0 12px var(--cyan);
-  border-color: var(--cyan);
-}
-
-button:active { transform: scale(0.98); }
-
-/* Dashboard Terminal Stats */
-.dashboard {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  font-weight: 600;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   gap: 8px;
 }
 
-.stat { background: rgba(0, 0, 0, 0.8); padding: 12px; border: 1px solid var(--border); }
-.stat.eff { border-color: var(--amber); box-shadow: 0 0 10px rgba(255, 176, 0, 0.2); }
-.stat.top { border-color: var(--accent); box-shadow: 0 0 10px rgba(0, 255, 65, 0.2); }
-.stat.weak { border-color: var(--danger); box-shadow: 0 0 10px rgba(255, 0, 0, 0.2); }
-
-.stat label { font-size: 10px; text-transform: uppercase; opacity: 0.8; }
-.stat.eff label { color: var(--amber); }
-.stat.top label { color: var(--accent); }
-.stat.weak label { color: var(--danger); }
-
-.stat span {
-  font-size: 18px;
-  font-weight: 800;
-  display: block;
-  margin-top: 5px;
-  word-break: break-all;
+button.primary {
+  background: var(--accent);
+  color: white;
+  grid-column: span 2;
 }
-.stat.eff span { color: var(--amber); }
-.stat.top span { color: var(--accent); }
-.stat.weak span { color: var(--danger); }
 
-/* Table Digital Design */
-.table-shell { padding: 0; border-color: var(--cyan); }
-.table-header-row {
+button.primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+button.primary:active { transform: scale(0.98); }
+
+/* Dashboard Stats */
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.stat {
+  background: var(--rowA);
+  padding: 16px;
+  border-radius: 18px;
   display: flex;
-  padding: 12px 16px;
-  background: rgba(0, 229, 255, 0.2);
-  border-bottom: 2px solid var(--cyan);
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-.table-header-row h3 { margin: 0; font-size: 16px; color: var(--cyan); text-shadow: 0 0 5px var(--cyan); letter-spacing: 1px; }
+.stat label { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; }
+.stat span {
+  font-size: 20px;
+  font-weight: 800;
+  margin-top: 8px;
+  color: var(--accent);
+}
 
-.table-wrapper { overflow: auto; position: relative; }
+/* Table Design */
+.table-shell { padding: 0; overflow: hidden; }
+.table-header-row { display: flex; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border); }
+.table-header-row h3 { margin: 0; font-size: 18px; }
+
+.table-wrapper {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
 
 .grid {
   display: grid;
-  grid-template-columns: 140px repeat(var(--days), 38px) 54px 38px;
+  grid-template-columns: 160px repeat(var(--days), 48px) 64px 48px;
 }
 
 .table-header {
-  background: #000;
+  background: var(--bg);
   position: sticky;
   top: 0;
   z-index: 100;
-  border-bottom: 2px solid var(--cyan);
+  border-bottom: 1px solid var(--border);
 }
 
 .table-header div {
-  padding: 10px 0;
+  padding: 12px 0;
   text-align: center;
-  font-size: 11px;
-  border-right: 1px solid var(--border);
-  background: #000;
-  color: var(--cyan);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--muted);
 }
 
-.row { border-bottom: 1px solid var(--border); background: #000; }
-.row:nth-child(even) { background: #050505; }
+.row { border-bottom: 1px solid var(--border); transition: background 0.2s; }
+.row:hover { background: rgba(255,255,255,0.02); }
 
 .cell {
-  padding: 4px;
+  padding: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-right: 1px solid var(--border);
 }
 
+/* IMPORTANT FIX: Sticky column z-index and width */
 .cell.habit-name {
   justify-content: flex-start;
-  font-size: 12px;
+  font-weight: 600;
+  font-size: 14px;
   position: sticky;
   left: 0;
-  background: #000 !important;
-  padding-left: 10px;
+  background: var(--card) !important;
+  padding-left: 20px;
   z-index: 150;
-  border-right: 2px solid var(--cyan);
-  color: var(--accent);
+  border-right: 2px solid var(--accent);
+  box-shadow: 4px 0 10px rgba(0,0,0,0.1);
 }
 
-.row:nth-child(even) .cell.habit-name { background: #050505 !important; }
+:root[data-theme="light"] .cell.habit-name { box-shadow: 4px 0 10px rgba(0,0,0,0.05); }
 
-/* Checkbox Style: Terminal Square */
+/* Checkbox Style */
 .box {
-  width: 22px;
-  height: 22px;
-  border: 1px solid var(--border);
-  background: transparent;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--border);
   cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -275,69 +275,77 @@ button:active { transform: scale(0.98); }
 
 .box.checked {
   background: var(--accent);
-  box-shadow: var(--accent-glow);
+  box-shadow: 0 0 15px var(--accent-glow);
+  transform: scale(1.05);
 }
 
-.box.checked::after { content: "■"; color: black; font-size: 14px; }
+.box.checked::after { content: "✓"; color: white; font-weight: bold; font-size: 16px; }
+.box:active { transform: scale(0.9); }
 
-.delete { cursor: pointer; color: var(--muted); font-size: 14px; }
-.delete:hover { color: var(--danger); text-shadow: 0 0 5px var(--danger); }
+.delete { color: var(--muted); cursor: pointer; transition: color 0.2s; }
+.delete:hover { color: var(--danger); }
 
-.today { background: rgba(0, 229, 255, 0.1) !important; color: var(--cyan); }
+.today { background: rgba(16, 185, 129, 0.08) !important; }
 
-/* Yearly Terminal */
-.yearly-section h3 { font-size: 16px; text-transform: uppercase; color: var(--amber); border-bottom: 1px solid var(--amber); margin-bottom: 12px; padding-bottom: 4px; }
-.yearly-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-.month-item { border: 1px solid var(--amber); padding: 8px; text-align: center; background: rgba(255, 176, 0, 0.05); }
-.month-item label { font-size: 10px; display: block; color: var(--amber); }
-.month-item b { font-size: 13px; margin-top: 4px; display: block; color: var(--amber); }
+/* Yearly Overview */
+.yearly-section h3 { margin: 0 0 16px; font-size: 18px; }
+.yearly-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.month-item { background: var(--rowA); padding: 12px; border-radius: 16px; text-align: center; display: flex; flex-direction: column; gap: 4px; }
+.month-item label { font-size: 11px; color: var(--muted); font-weight: 600; }
+.month-item b { font-size: 16px; color: var(--accent); }
 
-/* Global Digital Overlays */
+/* Bottom Navbar */
 .nav-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   background: var(--glass);
-  border-top: 2px solid var(--cyan);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0));
   display: flex;
   justify-content: space-around;
   z-index: 200;
-  padding-bottom: env(safe-area-inset-bottom, 0);
-  box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
 }
 
 .nav-item {
-  color: var(--cyan);
-  background: transparent;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
   border: none;
-  font-size: 10px;
-  padding: 14px 4px;
-  text-transform: uppercase;
-  flex: 1;
-  font-weight: 700;
+  background: none;
+  padding: 8px;
+  min-width: 60px;
+  min-height: auto;
 }
 
-.nav-item:active { background: var(--cyan); color: black; }
+.nav-active { color: var(--accent); }
+.nav-icon { font-size: 22px; }
 
+/* Mobile Responsiveness */
 @media (max-width: 600px) {
   .dashboard { grid-template-columns: 1fr; }
-  .stat { flex-direction: row; justify-content: space-between; align-items: center; }
-  .stat span { margin-top: 0; font-size: 16px; }
-  .grid { grid-template-columns: 120px repeat(var(--days), 38px) 54px 38px; }
+  .grid { grid-template-columns: 130px repeat(var(--days), 44px) 60px 48px; }
+  .stat { flex-direction: row; align-items: center; }
+  .stat span { margin-top: 0; }
   .yearly-grid { grid-template-columns: repeat(3, 1fr); }
+  
+  /* Extra safeguard for sticky names on small screens */
+  .cell.habit-name { width: 130px; }
 }
 
 </style>
 </head>
 <body>
 
-<canvas id="matrix-bg"></canvas>
-
 <header>
   <h1>HABIT TRACKER</h1>
   <div id="userProfile">
-    <img id="userPic" alt="ID">
+    <img id="userPic" alt="Profile">
     <span id="userName"></span>
   </div>
 </header>
@@ -345,78 +353,52 @@ button:active { transform: scale(0.98); }
 <div class="container" id="appContent">
   
   <div class="card dashboard">
-    <div class="stat eff"><label>EFFICIENCY</label><span id="overall">0%</span></div>
-    <div class="stat top"><label>TOP_NODE</label><span id="best">-</span></div>
-    <div class="stat weak"><label>WEAK_NODE</label><span id="worst">-</span></div>
+    <div class="stat"><label>Overall</label><span id="overall">0%</span></div>
+    <div class="stat"><label>Goal Reached</label><span id="best">-</span></div>
+    <div class="stat"><label>Needs Focus</label><span id="worst">-</span></div>
   </div>
 
   <div class="card table-shell">
-    <div class="table-header-row"><h3>> USER_DATABASE</h3></div>
+    <div class="table-header-row"><h3>ADD HABIT</h3></div>
     <div class="table-wrapper">
       <div id="header" class="grid table-header"></div>
       <div id="body"></div>
     </div>
   </div>
 
-  <div class="card controls-card">
+  <div class="card">
     <div class="controls">
       <select id="year"></select>
       <select id="month"></select>
-      <input id="newHabit" placeholder="NEW_DATABASE_ENTRY..." enterkeyhint="done">
-      <button onclick="addHabit()" class="primary">INSERT ENTRY</button>
-      <button id="loginBtn" style="color:var(--cyan); border-color:var(--cyan); font-size: 11px;">AUTH_ACCESS</button>
-      <button id="logoutBtn" style="display:none; color:var(--cyan); border-color:var(--cyan); font-size: 11px;">TERM_SESSION</button>
+      <input id="newHabit" placeholder="New habit name..." enterkeyhint="done">
+      <button onclick="addHabit()" class="primary">Add Ritual</button>
+      <button id="loginBtn">Login to Sync</button>
+      <button id="logoutBtn" style="display:none">Logout</button>
     </div>
   </div>
 
-  <div class="card yearly-card yearly-section">
-    <h3>DATA_INSIGHTS</h3>
+  <div class="card yearly-section">
+    <h3>Insights</h3>
     <div id="yearly" class="yearly-grid"></div>
   </div>
 </div>
 
 <nav class="nav-bar">
-  <button class="nav-item" onclick="window.scrollTo({top:0, behavior:'smooth'})">HOME</button>
-  <button class="nav-item" onclick="exportCSV()">BACKUP</button>
-  <button class="nav-item" onclick="showInstallPrompt()" id="installBtnItem">SYNC_APP</button>
-  <button class="nav-item" style="color:var(--muted)">v2.4.2</button>
+  <button class="nav-item nav-active" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+    <span class="nav-icon">🏠</span><span style="font-size: 10px;">Home</span>
+  </button>
+  <button class="nav-item" onclick="toggleTheme()">
+    <span class="nav-icon">🌓</span><span style="font-size: 10px;">Theme</span>
+  </button>
+  <button class="nav-item" onclick="exportCSV()">
+    <span class="nav-icon">📤</span><span style="font-size: 10px;">Export</span>
+  </button>
+  <button class="nav-item" onclick="showInstallPrompt()" id="installBtnItem">
+    <span class="nav-icon">📲</span><span style="font-size: 10px;">Install</span>
+  </button>
 </nav>
 
 <script>
-/* MATRIX RAIN EFFECT - ENHANCED COLOR */
-const canvas = document.getElementById('matrix-bg');
-const ctx = canvas.getContext('2d');
-
-function resize() {
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
-}
-window.onresize = resize;
-resize();
-
-const chars = "0123456789ABCDEFHIJKLMNOPQRSTUVWXYZアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン";
-const fontSize = 16;
-const columns = canvas.width / fontSize;
-const drops = Array(Math.floor(columns)).fill(1);
-const colors = ["#00ff41", "#008f11", "#00e5ff", "#007a8a"];
-
-function draw() {
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-  ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.font = fontSize + 'px monospace';
-
-  for (let i = 0; i < drops.length; i++) {
-    const text = chars[Math.floor(Math.random() * chars.length)];
-    ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
-    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
-      drops[i] = 0;
-    }
-    drops[i]++;
-  }
-}
-setInterval(draw, 33);
-
 /* CORE LOGIC PRESERVATION */
 let USER_KEY = "guest";
 function setUser(uid) { USER_KEY = uid || "guest" }
