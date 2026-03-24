@@ -401,19 +401,39 @@ const prof = document.getElementById("userProfile"), pic = document.getElementBy
 
 loginBtn.onclick = () => {
   loginBtn.disabled = true; loginBtn.innerText = "AUTHENTICATING...";
-  signInWithPopup(auth, provider).catch(e => {
+  console.log("Auth Start: Google Popup Requested...");
+  
+  // Safety timeout to reset button if popup is blocked or hangs
+  const resetTimer = setTimeout(() => {
+    if(loginBtn.innerText === "AUTHENTICATING...") {
+      loginBtn.disabled = false; loginBtn.innerText = "AUTH WITH GOOGLE";
+      console.warn("Auth Timeout: Popup may have been blocked or closed.");
+    }
+  }, 10000);
+
+  signInWithPopup(auth, provider)
+  .then(() => { clearTimeout(resetTimer); console.log("Auth Success!"); })
+  .catch(e => {
+    clearTimeout(resetTimer);
     loginBtn.disabled = false; loginBtn.innerText = "AUTH WITH GOOGLE";
-    if(e.code === 'auth/unauthorized-domain') alert("Authorize: "+window.location.host+" in Firebase.");
+    console.error("Auth Fail:", e.code, e.message);
+    if(e.code === 'auth/unauthorized-domain') 
+      alert("DOMAIN ERROR: Go to Firebase Console > Auth > Settings > Authorized Domains and add: " + window.location.host);
+    else if(e.code === 'auth/popup-blocked')
+      alert("POPUP BLOCKED: Please enable popups for this site or use a different browser.");
     else alert("Login Error: " + e.message);
   });
 };
-logoutBtn.onclick = () => signOut(auth);
+logoutBtn.onclick = () => { console.log("User Logged Out"); signOut(auth); };
 
 let unsub = null;
 onAuthStateChanged(auth, user => {
   if(unsub) unsub();
+  // Ensure button resets if user is found or if login fails
+  loginBtn.disabled = false; loginBtn.innerText = "AUTH WITH GOOGLE";
+
   if(user) {
-    setUser(user.uid); loginBtn.style.display="none"; logoutBtn.style.display="block";
+    setUser(user.uid); console.log("Session Active: " + user.uid); loginBtn.style.display="none"; logoutBtn.style.display="block";
     prof.style.display="flex"; pic.src=user.photoURL; name.textContent=user.displayName;
     unsub = onSnapshot(doc(db,"users",user.uid), snap => {
       const data = snap.data(); if (!data) return;
