@@ -74,7 +74,7 @@ html, body {
 
 canvas#matrix-bg {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-  z-index: -1; opacity: 0.2; display: none;
+  z-index: -1; opacity: 0.12; display: none; pointer-events: none;
 }
 [data-theme="matrix"] canvas#matrix-bg { display: block; }
 
@@ -116,7 +116,9 @@ input, select, button {
 }
 [data-theme="matrix"] input, [data-theme="matrix"] select, [data-theme="matrix"] button { border-radius: 0; }
 
+button { cursor: pointer; transition: all 0.2s; }
 button.primary { background: var(--accent); color: black; font-weight: 800; border: none; grid-column: span 2; }
+button.primary:disabled { opacity: 0.5; }
 
 /* Dashboard */
 .dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
@@ -140,12 +142,11 @@ button.primary { background: var(--accent); color: black; font-weight: 800; bord
 
 .cell { padding: 6px; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--border); }
 
-/* THE OVERLAY FIX: Glassmorphic Sticky Column */
 .cell.habit-name {
   justify-content: flex-start;
   position: sticky; left: 0; z-index: 250;
   background: var(--sticky-bg) !important;
-  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
   padding-left: 15px; font-weight: 600; font-size: 13px;
   border-right: 2px solid var(--accent);
   box-shadow: 4px 0 10px rgba(0,0,0,0.2);
@@ -159,12 +160,6 @@ button.primary { background: var(--accent); color: black; font-weight: 800; bord
 .box.checked::after { content: "✓"; color: black; font-weight: 900; }
 [data-theme="matrix"] .box.checked::after { content: "■"; }
 
-/* Yearly */
-.yearly-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
-.month-item { background: var(--rowA); padding: 10px; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
-.month-item label { font-size: 10px; color: var(--muted); }
-.month-item b { display: block; font-size: 14px; color: var(--accent); }
-
 /* Footer Nav */
 .nav-bar {
   position: fixed; bottom: 0; left: 0; right: 0;
@@ -173,7 +168,7 @@ button.primary { background: var(--accent); color: black; font-weight: 800; bord
   padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0));
   display: flex; justify-content: space-around; z-index: 600;
 }
-.nav-item { background: none; border: none; color: var(--muted); font-size: 11px; font-weight: 800; cursor: pointer; border-radius: 0; min-height: auto; padding: 10px 0; }
+.nav-item { background: none; border: none; color: var(--muted); font-size: 11px; font-weight: 800; cursor: pointer; padding: 10px; min-height: auto; width: auto; }
 .nav-item.active { color: var(--accent); }
 
 @media (max-width: 600px) {
@@ -181,20 +176,18 @@ button.primary { background: var(--accent); color: black; font-weight: 800; bord
   .grid { grid-template-columns: 120px repeat(var(--days), 40px) 54px 44px; }
   .stat { flex-direction: row; display: flex; justify-content: space-between; align-items: center; }
   .stat span { margin-top: 0; }
-  .yearly-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
 </style>
 </head>
-<body>
+<body onclick="playMatrixSound()">
 
 <canvas id="matrix-bg"></canvas>
 
 <header>
   <h1>HABIT TRACKER</h1>
-  <div id="userProfile">
-    <img id="userPic" alt="Profile">
-    <span id="userName"></span>
+  <div id="userProfile" style="display:none">
+    <img id="userPic" alt="Profile"><span id="userName"></span>
   </div>
 </header>
 
@@ -207,7 +200,7 @@ button.primary { background: var(--accent); color: black; font-weight: 800; bord
   </div>
 
   <div class="card table-shell">
-    <div class="table-header-row"><h3>ADD HABIT</h3></div>
+    <div class="table-header-row"><h3>HABIT LOG</h3></div>
     <div class="table-wrapper">
       <div id="header" class="grid table-header"></div>
       <div id="body"></div>
@@ -218,16 +211,16 @@ button.primary { background: var(--accent); color: black; font-weight: 800; bord
     <div class="controls">
       <select id="year"></select>
       <select id="month"></select>
-      <input id="newHabit" placeholder="Log new habit..." enterkeyhint="done">
-      <button onclick="addHabit()" class="primary">INSERT HABIT</button>
-      <button id="loginBtn" style="font-size: 11px;">ACCESS CLOUD</button>
-      <button id="logoutBtn" style="display:none; font-size: 11px;">DISCONNECT</button>
+      <input id="newHabit" placeholder="Log new habit entry..." enterkeyhint="done">
+      <button onclick="addHabit()" class="primary">COMMIT ENTRY</button>
+      <button id="loginBtn">AUTH WITH GOOGLE</button>
+      <button id="logoutBtn" style="display:none">DISCONNECT</button>
     </div>
   </div>
 
-  <div class="card yearly-section">
-    <h3>DATA INSIGHTS</h3>
-    <div id="yearly" class="yearly-grid"></div>
+  <div class="card">
+    <h3 style="margin-top:0; font-size: 14px; opacity:0.6">> DATA_INSIGHTS</h3>
+    <div id="yearly" class="grid-layout" style="display:grid; grid-template-columns: repeat(4,1fr); gap:10px;"></div>
   </div>
 </div>
 
@@ -239,10 +232,25 @@ button.primary { background: var(--accent); color: black; font-weight: 800; bord
 </nav>
 
 <script>
-/* THEME SWITCHER LOGIC */
+/* MATRIX AUDIO & SFX */
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+function playMatrixSound() {
+  if (document.documentElement.getAttribute("data-theme") !== "matrix") return;
+  if(audioCtx.state === 'suspended') audioCtx.resume();
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+  osc.type = 'square';
+  osc.frequency.setValueAtTime(440 + Math.random()*800, audioCtx.currentTime);
+  gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.1);
+  osc.connect(gain); gain.connect(audioCtx.destination);
+  osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+}
+
+/* THEME SWITCHER */
 const themes = ["dark", "light", "matrix"];
 let currentThemeIdx = themes.indexOf(localStorage.getItem("theme") || "dark");
-if(currentThemeIdx === -1) currentThemeIdx = 0;
+if(currentThemeIdx<0) currentThemeIdx=0;
 
 function applyTheme(idx) {
   const t = themes[idx];
@@ -251,174 +259,123 @@ function applyTheme(idx) {
   document.getElementById("themeBtn").innerText = `THEME: ${t.toUpperCase()}`;
   if(t === "matrix") startMatrix(); else stopMatrix();
 }
-
-function nextTheme() {
-  currentThemeIdx = (currentThemeIdx + 1) % themes.length;
-  applyTheme(currentThemeIdx);
-}
+function nextTheme() { currentThemeIdx = (currentThemeIdx+1)%3; applyTheme(currentThemeIdx); playMatrixSound(); }
 applyTheme(currentThemeIdx);
 
 /* MATRIX LOGIC */
-const canvas = document.getElementById('matrix-bg');
-const ctx = canvas.getContext('2d');
+const canvas = document.getElementById('matrix-bg'), ctx = canvas.getContext('2d');
 let matrixInterval = null;
-
 function startMatrix() {
   if(matrixInterval) return;
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight;
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
   const chars = "0123456789ABCDEFHIJKLMNOPQRSTUVWXYZアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン";
-  const fontSize = 16;
-  const columns = canvas.width / fontSize;
-  const drops = Array(Math.floor(columns)).fill(1);
+  const f = 16, drops = Array(Math.floor(canvas.width/f)).fill(1);
   matrixInterval = setInterval(() => {
-    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#10b981';
-    ctx.font = fontSize + 'px monospace';
-    for (let i = 0; i < drops.length; i++) {
-      const text = chars[Math.floor(Math.random() * chars.length)];
-      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
-      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.08)'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#00ff41'; ctx.font = f + 'px monospace';
+    drops.forEach((y, i) => {
+      ctx.fillText(chars[Math.floor(Math.random()*chars.length)], i*f, y*f);
+      if(y*f > canvas.height && Math.random() > 0.975) drops[i] = 0;
       drops[i]++;
-    }
-  }, 33);
+    });
+  }, 40);
 }
 function stopMatrix() { clearInterval(matrixInterval); matrixInterval = null; }
 
-/* CORE APP LOGIC */
+/* APP LOGIC */
 let USER_KEY = "guest";
 function setUser(uid) { USER_KEY = uid || "guest" }
 function ukey(k) { return USER_KEY + "::" + k }
 
-let habits = JSON.parse(localStorage.getItem(ukey("habit-list"))) || [
-  "Daily Exercise", "Drink 2L Water", "Read 10 Pages",
-  "Sleep Before 11 PM", "Meditation", "No Junk Food", "Work on Goals"
-];
+let habits = JSON.parse(localStorage.getItem(ukey("habit-list"))) || ["Exercise", "Water", "Reading", "Sleep", "Meditate"];
 
 const yearSel = document.getElementById("year"), monthSel = document.getElementById("month");
 const header = document.getElementById("header"), body = document.getElementById("body");
 
 const now = new Date();
-const currentYear = now.getFullYear();
-for(let y = currentYear - 2; y <= currentYear + 5; y++) {
-  let o = document.createElement("option"); o.value = y; o.text = y;
-  if(y === currentYear) o.selected = true;
+for(let y=now.getFullYear()-2; y<=now.getFullYear()+3; y++) {
+  let o = document.createElement("option"); o.value=y; o.text=y; if(y===now.getFullYear())o.selected=true;
   yearSel.appendChild(o);
 }
-for(let m = 0; m < 12; m++) {
-  let o = document.createElement("option"); o.value = m;
-  o.text = new Date(2025, m).toLocaleString("default", { month: "long" });
-  if(m === now.getMonth()) o.selected = true;
-  monthSel.appendChild(o);
+for(let m=0; m<12; m++) {
+  let o = document.createElement("option"); o.value=m; o.text=new Date(0,m).toLocaleString('default',{month:'long'});
+  if(m===now.getMonth())o.selected=true; monthSel.appendChild(o);
 }
 
-function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate() }
+function daysInMonth(y, m) { return new Date(y, m+1, 0).getDate() }
 function key(y, m, h, d) { return `${y}-${m}-${h}-${d}` }
-function isTodayCell(y, m, d) {
-  const t = new Date();
-  return y === t.getFullYear() && m === t.getMonth() && d === t.getDate();
-}
-
 function saveHabits() { localStorage.setItem(ukey("habit-list"), JSON.stringify(habits)) }
 
 function addHabit() {
-  const i = document.getElementById("newHabit");
-  if(!i.value.trim()) return;
-  habits.push(i.value.trim());
-  saveHabits();
-  syncToCloud(ukey("habit-list"), JSON.stringify(habits));
+  const i = document.getElementById("newHabit"); if(!i.value.trim()) return;
+  habits.push(i.value.trim()); saveHabits();
+  if(window.syncToCloud) syncToCloud(ukey("habit-list"), JSON.stringify(habits));
   i.value = ""; render();
 }
 
-function removeHabit(h) {
-  if(!confirm(`Delete "${h}"?`)) return;
-  habits = habits.filter(x => x !== h);
-  saveHabits();
-  syncToCloud(ukey("habit-list"), JSON.stringify(habits));
-  render();
-}
+function removeHabit(h) { if(!confirm(`Delete ${h}?`)) return; habits=habits.filter(x=>x!==h); saveHabits(); render(); }
 
 function toggle(h, d) {
-  const y = +yearSel.value, m = +monthSel.value, k = key(y, m, h, d);
+  const y = +yearSel.value, m = +monthSel.value, k = key(y,m,h,d);
   const v = localStorage.getItem(ukey(k)) !== "true";
-  localStorage.setItem(ukey(k), v);
-  syncToCloud(ukey(k), v);
+  localStorage.setItem(ukey(k), v); if(window.syncToCloud) syncToCloud(ukey(k), v);
   render();
 }
 
 function render() {
-  const y = +yearSel.value, m = +monthSel.value, days = daysInMonth(y, m);
-  header.style.setProperty("--days", days);
-  body.style.setProperty("--days", days);
-  header.innerHTML = "<div>Habit</div>";
-  for(let d = 1; d <= days; d++) header.innerHTML += `<div>${d}</div>`;
+  const y = +yearSel.value, m = +monthSel.value, dInM = daysInMonth(y,m), t = new Date();
+  header.style.setProperty("--days", dInM); body.style.setProperty("--days", dInM);
+  header.innerHTML = "<div>Habit</div>"; for(let d=1; d<=dInM; d++) header.innerHTML += `<div>${d}</div>`;
   header.innerHTML += "<div>%</div><div>🗑</div>";
-
-  let totalP = 0, best = { n: "-", v: -1 }, worst = { n: "-", v: 101 };
-  body.innerHTML = "";
-
+  let totalP = 0, best = {n:"-", v:-1}, worst = {n:"-", v:101}; body.innerHTML = "";
   habits.forEach(h => {
-    let done = 0;
-    const row = document.createElement("div");
-    row.className = "grid row";
+    let done = 0; const row = document.createElement("div"); row.className="grid row";
     row.innerHTML = `<div class="cell habit-name">${h}</div>`;
-    for(let d = 1; d <= days; d++) {
-      const c = localStorage.getItem(ukey(key(y, m, h, d))) === "true";
-      if(c) done++;
-      row.innerHTML += `<div class="cell ${isTodayCell(y, m, d) ? "today" : ""}"><div class="box ${c ? "checked" : ""}" onclick="toggle('${h}', ${d})"></div></div>`;
+    for(let d=1; d<=dInM; d++) {
+      const c = localStorage.getItem(ukey(key(y,m,h,d))) === "true"; if(c) done++;
+      row.innerHTML += `<div class="cell"><div class="box ${c?'checked':''}" onclick="toggle('${h}', ${d}); playMatrixSound()"></div></div>`;
     }
-    const p = Math.round(done / days * 100);
-    totalP += p;
-    if(p > best.v) best = { n: h, v: p };
-    if(p < worst.v) worst = { n: h, v: p };
-    row.innerHTML += `<div class="cell" style="font-weight:800;color:var(--accent)">${p}%</div><div class="cell" onclick="removeHabit('${h}')" style="cursor:pointer">✕</div>`;
+    const p = Math.round(done/dInM*100); totalP += p;
+    if(p>best.v) best={n:h,v:p}; if(p<worst.v) worst={n:h,v:p};
+    row.innerHTML += `<div class="cell" style="font-weight:800;color:var(--accent)">${p}%</div><div class="cell" onclick="removeHabit('${h}')">✕</div>`;
     body.appendChild(row);
   });
-  document.getElementById("overall").innerText = Math.round(totalP / (habits.length || 1)) + "%";
-  document.getElementById("best").innerText = best.n;
-  document.getElementById("worst").innerText = worst.n;
+  document.getElementById("overall").innerText = Math.round(totalP/(habits.length||1))+"%";
+  document.getElementById("best").innerText = best.n; document.getElementById("worst").innerText = worst.n;
   yearly(y);
 }
 
 function yearly(y) {
   const box = document.getElementById("yearly"); box.innerHTML = "";
-  for(let m = 0; m < 12; m++) {
-    let dInM = daysInMonth(y, m), sum = 0;
+  for(let m=0; m<12; m++) {
+    let dInM = daysInMonth(y,m), sum = 0;
     habits.forEach(h => {
-      let d = 0;
-      for(let i = 1; i <= dInM; i++) if(localStorage.getItem(ukey(key(y, m, h, i))) === "true") d++;
-      sum += d / dInM * 100;
+      let d=0; for(let i=1; i<=dInM; i++) if(localStorage.getItem(ukey(key(y,m,h,i)))==="true")d++;
+      sum += d/dInM*100;
     });
-    box.innerHTML += `<div class="month-item"><label>${new Date(y, m).toLocaleString("default", { month: "short" })}</label><b>${Math.round(sum / (habits.length || 1))}%</b></div>`;
+    box.innerHTML += `<div style="text-align:center; padding:5px; border:1px solid var(--border); border-radius:10px;">
+      <div style="font-size:10px; color:var(--muted)">${new Date(0,m).toLocaleString('default',{month:'short'})}</div>
+      <b style="color:var(--accent); font-size:12px;">${Math.round(sum/(habits.length||1))}%</b>
+    </div>`;
   }
 }
-
-yearSel.onchange = render; monthSel.onchange = render;
-render();
+yearSel.onchange=monthSel.onchange=render; render();
 
 function exportCSV() {
-  const y = +yearSel.value, m = +monthSel.value, days = daysInMonth(y, m);
-  let csv = "Habit," + Array.from({ length: days }, (_, i) => i + 1).join(",") + "\n";
+  const y=+yearSel.value, m=+monthSel.value, dInM=daysInMonth(y,m);
+  let csv = "Habit," + Array.from({length:dInM},(_,i)=>i+1).join(",") + "\n";
   habits.forEach(h => {
-    csv += `"${h}"`;
-    for(let d = 1; d <= days; d++) csv += localStorage.getItem(ukey(key(y, m, h, d))) === "true" ? ",✔" : ",";
+    csv += `"${h}"`; for(let d=1; d<=dInM; d++) csv += localStorage.getItem(ukey(key(y,m,h,d)))==="true"?",✔":",";
     csv += "\n";
   });
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-  a.download = `habits-${y}-${m + 1}.csv`; a.click();
+  const a = document.createElement("a"); a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=`habits-${y}-${m+1}.csv`; a.click();
 }
 
 /* PWA */
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
-}
-let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
-async function showInstallPrompt() {
-  if (deferredPrompt) { deferredPrompt.prompt(); } else { alert("Use browser menu to install"); }
-}
+if('serviceWorker' in navigator) { window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js')); }
+let defP; window.addEventListener('beforeinstallprompt',(e)=>{ e.preventDefault(); defP=e; });
+function showInstallPrompt(){ if(defP) defP.prompt(); else alert("Use browser menu to install"); }
 </script>
 
 <script type="module">
@@ -433,36 +390,40 @@ const app = initializeApp({
 });
 const auth = getAuth(app), db = getFirestore(app), provider = new GoogleAuthProvider();
 
-async function syncToCloudInternal(key, value) {
+window.syncToCloud = async (k, v) => {
   if (USER_KEY === "guest") return;
-  try {
-    await setDoc(doc(db, "users", USER_KEY), { [key]: { value, updatedAt: Date.now() } }, { merge: true });
-  } catch (e) { console.error("Sync error:", e); }
-}
-window.syncToCloud = syncToCloudInternal;
+  try { await setDoc(doc(db,"users",USER_KEY),{[k]:{value:v, updatedAt:Date.now()}},{merge:true}); } 
+  catch(e) { console.error("Sync fail", e); }
+};
 
 const loginBtn = document.getElementById("loginBtn"), logoutBtn = document.getElementById("logoutBtn");
-const userProfile = document.getElementById("userProfile"), userPic = document.getElementById("userPic"), userName = document.getElementById("userName");
+const prof = document.getElementById("userProfile"), pic = document.getElementById("userPic"), name = document.getElementById("userName");
 
-loginBtn.onclick = () => signInWithPopup(auth, provider);
+loginBtn.onclick = () => {
+  loginBtn.disabled = true; loginBtn.innerText = "AUTHENTICATING...";
+  signInWithPopup(auth, provider).catch(e => {
+    loginBtn.disabled = false; loginBtn.innerText = "AUTH WITH GOOGLE";
+    if(e.code === 'auth/unauthorized-domain') alert("Authorize: "+window.location.host+" in Firebase.");
+    else alert("Login Error: " + e.message);
+  });
+};
 logoutBtn.onclick = () => signOut(auth);
 
 let unsub = null;
 onAuthStateChanged(auth, user => {
-  if (unsub) unsub();
-  if (user) {
-    setUser(user.uid);
-    loginBtn.style.display = "none"; logoutBtn.style.display = "block";
-    userProfile.style.display = "flex"; userPic.src = user.photoURL; userName.textContent = user.displayName;
-    unsub = onSnapshot(doc(db, "users", user.uid), snap => {
+  if(unsub) unsub();
+  if(user) {
+    setUser(user.uid); loginBtn.style.display="none"; logoutBtn.style.display="block";
+    prof.style.display="flex"; pic.src=user.photoURL; name.textContent=user.displayName;
+    unsub = onSnapshot(doc(db,"users",user.uid), snap => {
       const data = snap.data(); if (!data) return;
-      Object.keys(data).forEach(k => { if (data[k] && data[k].value !== undefined) localStorage.setItem(k, data[k].value) });
+      Object.keys(data).forEach(k => { if (data[k] && data[k].value!==undefined) localStorage.setItem(k, data[k].value) });
       habits = JSON.parse(localStorage.getItem(ukey("habit-list"))) || habits;
       render();
     });
   } else {
-    setUser(null); loginBtn.style.display = "block"; logoutBtn.style.display = "none";
-    userProfile.style.display = "none"; render();
+    setUser(null); loginBtn.style.display="block"; loginBtn.disabled=false; loginBtn.innerText="AUTH WITH GOOGLE";
+    logoutBtn.style.display="none"; prof.style.display="none"; render();
   }
 });
 </script>
