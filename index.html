@@ -2,16 +2,16 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>HABIT TRACKER</title>
+<title>HABIT TRACKER | TERMINAL</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#0b0f14">
+<meta name="theme-color" content="#000000">
 
-<!-- Google Fonts -->
+<!-- Hacker Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;700;800&display=swap" rel="stylesheet">
 
 <link rel="icon" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -19,30 +19,17 @@
 
 <style>
 :root {
-  --bg: #0b0f14;
-  --card: #141922;
-  --rowA: #1a202c;
-  --rowB: #141922;
-  --border: rgba(255, 255, 255, 0.08);
-  --text: #ffffff;
-  --muted: #94a3b8;
-  --accent: #10b981;
-  --accent-glow: rgba(16, 185, 129, 0.4);
-  --danger: #ef4444;
-  --glass: rgba(20, 25, 34, 0.7);
-}
-
-:root[data-theme="light"] {
-  --bg: #f8fafc;
-  --card: #ffffff;
-  --rowA: #f1f5f9;
-  --rowB: #ffffff;
-  --border: #e2e8f0;
-  --text: #1e293b;
-  --muted: #64748b;
-  --accent: #059669;
-  --accent-glow: rgba(5, 150, 105, 0.2);
-  --glass: rgba(255, 255, 255, 0.8);
+  --bg: #000000;
+  --card: rgba(0, 0, 0, 0.85);
+  --rowA: rgba(0, 255, 65, 0.05);
+  --rowB: rgba(0, 0, 0, 0.9);
+  --border: #008f11;
+  --text: #00ff41;
+  --muted: #008f11;
+  --accent: #00ff41;
+  --accent-glow: 0 0 12px #00ff41;
+  --danger: #ff0000;
+  --glass: rgba(0, 0, 0, 0.92);
 }
 
 * {
@@ -55,220 +42,190 @@ html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family: 'Outfit', sans-serif;
+  font-family: 'JetBrains Mono', 'Courier New', monospace;
   background: var(--bg);
   color: var(--text);
   overflow-x: hidden;
 }
 
-/* Animations */
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+#matrix-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  opacity: 0.35;
+}
 
-/* Header & Glass Effect */
+/* Header & Digital Effect */
 header {
-  padding: env(safe-area-inset-top, 0) 24px 20px;
+  padding: env(safe-area-inset-top, 0) 24px 12px;
   background: var(--glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
   position: sticky;
   top: 0;
   z-index: 100;
   display: flex;
   flex-direction: column;
   align-items: center;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
+  box-shadow: 0 0 20px var(--border);
 }
 
 header h1 {
-  margin: 20px 0 10px;
-  font-size: 26px;
+  margin: 15px 0 5px;
+  font-size: 24px;
   font-weight: 800;
-  letter-spacing: -0.5px;
-  background: linear-gradient(135deg, #fff 30%, var(--accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
-
-:root[data-theme="light"] header h1 {
-  background: linear-gradient(135deg, #1e293b 30%, var(--accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  text-shadow: var(--accent-glow);
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 24px 16px 120px;
+  padding: 20px 12px 120px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 16px;
 }
 
-/* Auth Profile Styles */
 #userProfile {
   display: none;
   align-items: center;
   gap: 10px;
-  padding: 8px 12px;
-  background: var(--border);
-  border-radius: 50px;
-  margin-top: 10px;
+  padding: 6px 12px;
+  background: rgba(0, 255, 65, 0.1);
+  border: 1px solid var(--border);
+  margin-top: 5px;
 }
 
 #userPic {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  border-radius: 0;
   border: 1px solid var(--accent);
 }
 
-#userName {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
-}
+#userName { font-size: 11px; font-weight: 400; color: var(--accent); }
 
-/* Cards & Controls */
+/* Terminal Cards */
 .card {
   background: var(--card);
   border: 1px solid var(--border);
-  border-radius: 24px;
-  padding: 20px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  animation: fadeIn 0.5s ease backwards;
+  border-radius: 0;
+  padding: 16px;
+  box-shadow: inset 0 0 15px rgba(0, 255, 65, 0.1);
+  position: relative;
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  right: 2px;
+  height: 1px;
+  background: rgba(0, 255, 65, 0.2);
 }
 
 .controls {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 8px;
 }
 
-.controls input {
-  grid-column: span 2;
-}
+#newHabit { grid-column: span 2; }
 
 input, select, button {
-  background: var(--rowA);
+  background: black;
   color: var(--text);
   border: 1px solid var(--border);
-  padding: 12px 16px;
-  border-radius: 14px;
+  padding: 10px;
+  border-radius: 0;
   font-family: inherit;
-  font-size: 15px;
-  min-height: 48px;
-  transition: all 0.2s;
+  font-size: 14px;
+  transition: 0.2s;
 }
+
+input::placeholder { color: var(--muted); opacity: 0.5; }
 
 button {
   cursor: pointer;
-  font-weight: 600;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
+  font-weight: 700;
+  text-transform: uppercase;
 }
 
 button.primary {
   background: var(--accent);
-  color: white;
+  color: black;
   grid-column: span 2;
+  box-shadow: var(--accent-glow);
 }
 
-button.primary:hover {
-  filter: brightness(1.1);
-  transform: translateY(-1px);
-}
+button:hover { background: rgba(0, 255, 65, 0.1); color: var(--accent); border-color: var(--accent); }
+button.primary:hover { background: #008f11; color: #fff; }
 
-button.primary:active {
-  transform: scale(0.98);
-}
-
-/* Dashboard Stats */
+/* Dashboard Terminal Stats */
 .dashboard {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
+  gap: 8px;
 }
 
 .stat {
-  background: var(--rowA);
-  padding: 16px;
-  border-radius: 18px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  background: rgba(0, 255, 65, 0.05);
+  padding: 12px;
+  border: 1px solid var(--border);
 }
 
-.stat label {
-  font-size: 12px;
-  color: var(--muted);
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
+.stat label { font-size: 10px; color: var(--muted); text-transform: uppercase; }
 .stat span {
-  font-size: 20px;
+  font-size: 18px;
   font-weight: 800;
-  margin-top: 8px;
-  color: var(--accent);
+  display: block;
+  margin-top: 5px;
+  word-break: break-all;
 }
 
-/* Table Design */
-.table-shell {
-  padding: 0;
-  overflow: hidden;
-}
-
+/* Table Digital Design */
+.table-shell { padding: 0; }
 .table-header-row {
   display: flex;
-  align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
+  padding: 12px 16px;
+  background: rgba(0, 255, 65, 0.15);
+  border-bottom: 2px solid var(--border);
 }
 
-.table-header-row h3 {
-  margin: 0;
-  font-size: 18px;
-}
+.table-header-row h3 { margin: 0; font-size: 16px; letter-spacing: 1px; }
 
-.table-wrapper {
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-  position: relative;
-}
+.table-wrapper { overflow: auto; }
 
 .grid {
   display: grid;
-  grid-template-columns: 160px repeat(var(--days), 48px) 64px 48px;
+  grid-template-columns: 140px repeat(var(--days), 38px) 54px 38px;
 }
 
 .table-header {
-  background: var(--bg);
+  background: black;
   position: sticky;
   top: 0;
   z-index: 20;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 2px solid var(--border);
 }
 
 .table-header div {
-  padding: 12px 0;
+  padding: 10px 0;
   text-align: center;
-  font-weight: 600;
-  font-size: 13px;
-  color: var(--muted);
+  font-size: 11px;
+  border-right: 1px solid var(--border);
 }
 
-.row {
-  border-bottom: 1px solid var(--border);
-  transition: background 0.2s;
-}
-
-.row:hover { background: rgba(255,255,255,0.02); }
+.row { border-bottom: 1px solid var(--border); }
+.row:nth-child(even) { background: var(--rowA); }
 
 .cell {
-  padding: 10px;
+  padding: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -277,24 +234,22 @@ button.primary:active {
 
 .cell.habit-name {
   justify-content: flex-start;
-  font-weight: 600;
-  font-size: 14px;
+  font-size: 12px;
   position: sticky;
   left: 0;
-  background: var(--card);
-  padding-left: 20px;
+  background: black;
+  padding-left: 10px;
   z-index: 10;
   border-right: 2px solid var(--border);
 }
 
-/* Checkbox Style */
+/* Checkbox Style: Terminal Square */
 .box {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: var(--border);
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--border);
+  background: transparent;
   cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -302,184 +257,144 @@ button.primary:active {
 
 .box.checked {
   background: var(--accent);
-  box-shadow: 0 0 15px var(--accent-glow);
-  transform: scale(1.05);
+  box-shadow: var(--accent-glow);
 }
 
-.box.checked::after {
-  content: "✓";
-  color: white;
-  font-weight: bold;
-  font-size: 16px;
-}
+.box.checked::after { content: "■"; color: black; font-size: 14px; }
 
-.box:active { transform: scale(0.9); }
+.delete { cursor: pointer; color: var(--muted); font-size: 14px; }
+.delete:hover { color: var(--danger); text-shadow: 0 0 5px var(--danger); }
 
-.delete {
-  color: var(--muted);
-  cursor: pointer;
-  transition: color 0.2s;
-}
+.today { border: 1px solid var(--accent); background: rgba(0, 255, 65, 0.1) !important; }
 
-.delete:hover { color: var(--danger); }
+/* Yearly Terminal */
+.yearly-section h3 { font-size: 16px; text-transform: uppercase; border-bottom: 1px solid var(--border); margin-bottom: 12px; padding-bottom: 4px; }
+.yearly-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+.month-item { border: 1px solid var(--border); padding: 8px; text-align: center; background: rgba(0, 255, 65, 0.05); }
+.month-item label { font-size: 10px; display: block; }
+.month-item b { font-size: 13px; margin-top: 4px; display: block; }
 
-.today {
-  background: rgba(16, 185, 129, 0.08) !important;
-}
-
-/* Yearly Overview */
-.yearly-section h3 { margin: 0 0 16px; font-size: 18px; }
-
-.yearly-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-}
-
-.month-item {
-  background: var(--rowA);
-  padding: 12px;
-  border-radius: 16px;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.month-item label { font-size: 11px; color: var(--muted); font-weight: 600; }
-.month-item b { font-size: 16px; color: var(--accent); }
-
-/* Bottom Navbar */
+/* Global Digital Overlays */
 .nav-bar {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
   background: var(--glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-top: 1px solid var(--border);
-  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0));
+  border-top: 2px solid var(--border);
   display: flex;
   justify-content: space-around;
   z-index: 200;
+  padding-bottom: env(safe-area-inset-bottom, 0);
 }
 
 .nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  color: var(--muted);
-  border: none;
-  background: none;
-  padding: 8px;
-  min-width: 60px;
-  min-height: auto;
-}
-
-.nav-active {
   color: var(--accent);
+  background: transparent;
+  border: none;
+  font-size: 10px;
+  padding: 12px 4px;
+  text-transform: uppercase;
+  flex: 1;
 }
 
-.nav-icon {
-  font-size: 22px;
-}
+.nav-item:active { background: var(--accent); color: black; }
 
-/* Mobile Responsiveness */
 @media (max-width: 600px) {
   .dashboard { grid-template-columns: 1fr; }
-  .grid { grid-template-columns: 130px repeat(var(--days), 44px) 60px 48px; }
-  .stat { flex-direction: row; align-items: center; }
-  .stat span { margin-top: 0; }
+  .stat { flex-direction: row; justify-content: space-between; align-items: center; }
+  .stat span { margin-top: 0; font-size: 16px; }
   .yearly-grid { grid-template-columns: repeat(3, 1fr); }
-  
-  .desktop-only { display: none !important; }
 }
 
 </style>
 </head>
 <body>
 
+<canvas id="matrix-bg"></canvas>
+
 <header>
   <h1>HABIT TRACKER</h1>
   <div id="userProfile">
-    <img id="userPic" alt="Profile">
+    <img id="userPic" alt="ID">
     <span id="userName"></span>
   </div>
 </header>
 
 <div class="container" id="appContent">
   
-  <!-- Step 1: Analytics -->
   <div class="card dashboard">
-    <div class="stat">
-      <label>Overall</label>
-      <span id="overall">0%</span>
-    </div>
-    <div class="stat">
-      <label>Goal Reached</label>
-      <span id="best">-</span>
-    </div>
-    <div class="stat">
-      <label>Needs Focus</label>
-      <span id="worst">-</span>
-    </div>
+    <div class="stat"><label>EFFICIENCY</label><span id="overall">0%</span></div>
+    <div class="stat"><label>TOP_NODE</label><span id="best">-</span></div>
+    <div class="stat"><label>WEAK_NODE</label><span id="worst">-</span></div>
   </div>
 
-  <!-- Step 2: Main Rituals -->
   <div class="card table-shell">
-    <div class="table-header-row">
-      <h3>ADD HABIT</h3>
-    </div>
+    <div class="table-header-row"><h3>> USER_DATABASE</h3></div>
     <div class="table-wrapper">
       <div id="header" class="grid table-header"></div>
       <div id="body"></div>
     </div>
   </div>
 
-  <!-- Step 3: Global Actions -->
   <div class="card">
     <div class="controls">
       <select id="year"></select>
       <select id="month"></select>
-      <input id="newHabit" placeholder="New habit name..." enterkeyhint="done">
-      <button onclick="addHabit()" class="primary">Add Ritual</button>
-      
-      <button id="loginBtn">Login to Sync</button>
-      <button id="logoutBtn" style="display:none">Logout</button>
+      <input id="newHabit" placeholder="NEW_DATABASE_ENTRY..." enterkeyhint="done">
+      <button onclick="addHabit()" class="primary">INSERT ENTRY</button>
+      <button id="loginBtn" style="font-size: 11px;">AUTH_ACCESS</button>
+      <button id="logoutBtn" style="display:none; font-size: 11px;">TERM_SESSION</button>
     </div>
   </div>
 
-  <!-- Yearly Insights -->
   <div class="card yearly-section">
-    <h3>Insights</h3>
+    <h3>DATA_INSIGHTS</h3>
     <div id="yearly" class="yearly-grid"></div>
   </div>
-
 </div>
 
-<!-- Bottom App Navigation -->
 <nav class="nav-bar">
-  <button class="nav-item nav-active" onclick="window.scrollTo({top:0, behavior:'smooth'})">
-    <span class="nav-icon">🏠</span>
-    <span style="font-size: 10px;">Home</span>
-  </button>
-  <button class="nav-item" onclick="toggleTheme()">
-    <span class="nav-icon">🌓</span>
-    <span style="font-size: 10px;">Theme</span>
-  </button>
-  <button class="nav-item" onclick="exportCSV()">
-    <span class="nav-icon">📤</span>
-    <span style="font-size: 10px;">Export</span>
-  </button>
-  <button class="nav-item" onclick="showInstallPrompt()" id="installBtnItem">
-    <span class="nav-icon">📲</span>
-    <span style="font-size: 10px;">Install</span>
-  </button>
+  <button class="nav-item" onclick="window.scrollTo({top:0, behavior:'smooth'})">HOME</button>
+  <button class="nav-item" onclick="exportCSV()">BACKUP</button>
+  <button class="nav-item" onclick="showInstallPrompt()" id="installBtnItem">SYNC_APP</button>
+  <button class="nav-item" id="terminal-info">TERM_v2.4.1</button>
 </nav>
 
 <script>
+/* MATRIX RAIN EFFECT */
+const canvas = document.getElementById('matrix-bg');
+const ctx = canvas.getContext('2d');
+
+function resize() {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+}
+window.onresize = resize;
+resize();
+
+const chars = "0123456789ABCDEFHIJKLMNOPQRSTUVWXYZアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン";
+const fontSize = 16;
+const columns = canvas.width / fontSize;
+const drops = Array(Math.floor(columns)).fill(1);
+
+function draw() {
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.fillStyle = '#00ff41';
+  ctx.font = fontSize + 'px monospace';
+
+  for (let i = 0; i < drops.length; i++) {
+    const text = chars[Math.floor(Math.random() * chars.length)];
+    ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+    if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
+      drops[i] = 0;
+    }
+    drops[i]++;
+  }
+}
+setInterval(draw, 33);
+
 /* CORE LOGIC PRESERVATION */
 let USER_KEY = "guest";
 function setUser(uid) { USER_KEY = uid || "guest" }
