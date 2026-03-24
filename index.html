@@ -540,17 +540,21 @@ const db=getFirestore(app);
 const provider=new GoogleAuthProvider();
  async function syncToCloudInternal(key, value) {
   if (USER_KEY === "guest") return;
-
-  await setDoc(
-    doc(db, "users", USER_KEY),
-    {
-      [key]: {
-        value: value,
-        updatedAt: Date.now()
-      }
-    },
-    { merge: true }
-  );
+  console.log("Cloud Syncing:", key);
+  try {
+    await setDoc(
+      doc(db, "users", USER_KEY),
+      {
+        [key]: {
+          value: value,
+          updatedAt: Date.now()
+        }
+      },
+      { merge: true }
+    );
+  } catch (err) {
+    console.error("Firestore Save Error:", err);
+  }
 }
 
 /* ✅ MAKE IT GLOBAL */
@@ -563,7 +567,17 @@ const userProfile=document.getElementById("userProfile");
 const userPic=document.getElementById("userPic");
 const userName=document.getElementById("userName");
 
-loginBtn.onclick=()=>signInWithPopup(auth,provider);
+loginBtn.onclick=()=> {
+  signInWithPopup(auth,provider)
+    .catch(err => {
+      console.error("Login Failed:", err);
+      if (err.code === 'auth/unauthorized-domain') {
+        alert("Domain Not Authorized: Please add your Vercel domain to Firebase Console > Authentication > Settings > Authorized Domains.");
+      } else {
+        alert("Login failed: " + err.message);
+      }
+    });
+};
 logoutBtn.onclick=()=>signOut(auth);
 
 let unsub=null;
@@ -572,6 +586,7 @@ onAuthStateChanged(auth,user=>{
  if(unsub)unsub();
 
  if(user){
+  console.log("User Auth Status: Logged In", user.uid);
   setUser(user.uid);
   loginBtn.style.display="none";
   logoutBtn.style.display="inline-block";
@@ -581,22 +596,22 @@ onAuthStateChanged(auth,user=>{
 
   const ref=doc(db,"users",user.uid);
   unsub=onSnapshot(ref,snap=>{
-   const data=snap.data();
-   if(!data)return;
-   Object.keys(data).forEach(k => {
-  const cloud = data[k];
-  const local = localStorage.getItem(k);
+    const data=snap.data();
+    if(!data) return;
+    
+    console.log("Cloud Data Received", Object.keys(data).length, "keys");
+    // Corrected loop logic - removed redundant nested loop
+    Object.keys(data).forEach(k => {
+      if (data[k] && data[k].value !== undefined) {
+        localStorage.setItem(k, data[k].value);
+      }
+    });
 
- Object.keys(data).forEach(k => {
-  localStorage.setItem(k, data[k].value);
-});
-
-});
-
-   habits=JSON.parse(localStorage.getItem(ukey("habit-list")))||habits;
-   render();
-  });
+    habits=JSON.parse(localStorage.getItem(ukey("habit-list")))||habits;
+    render();
+  }, err => console.error("Firestore Snapshot Error:", err));
  }else{
+  console.log("User Auth Status: Guest");
   setUser(null);
   loginBtn.style.display="inline-block";
   logoutBtn.style.display="none";
