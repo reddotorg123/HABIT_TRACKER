@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
 <title>HABIT TRACKER</title>
@@ -8,10 +8,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="theme-color" content="#0b0f14">
 
-<!-- Google Fonts -->
+<!-- Fonts -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 
 <link rel="icon" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
@@ -22,325 +22,173 @@
   --bg: #0b0f14;
   --card: #141922;
   --rowA: #1a202c;
-  --rowB: #141922;
   --border: rgba(255, 255, 255, 0.08);
   --text: #ffffff;
   --muted: #94a3b8;
   --accent: #10b981;
   --accent-glow: rgba(16, 185, 129, 0.4);
   --danger: #ef4444;
-  --glass: rgba(20, 25, 34, 0.7);
+  --glass: rgba(20, 25, 34, 0.85);
+  --sticky-bg: rgba(20, 25, 34, 0.95);
+  --font: 'Outfit', sans-serif;
 }
 
-:root[data-theme="light"] {
-  --bg: #f8fafc;
+[data-theme="light"] {
+  --bg: #f1f5f9;
   --card: #ffffff;
-  --rowA: #f1f5f9;
-  --rowB: #ffffff;
+  --rowA: #f8fafc;
   --border: #e2e8f0;
   --text: #1e293b;
   --muted: #64748b;
   --accent: #059669;
   --accent-glow: rgba(5, 150, 105, 0.2);
-  --glass: rgba(255, 255, 255, 0.8);
+  --glass: rgba(255, 255, 255, 0.85);
+  --sticky-bg: rgba(255, 255, 255, 0.95);
 }
 
-* {
-  box-sizing: border-box;
-  -webkit-tap-highlight-color: transparent;
-  outline: none;
+[data-theme="matrix"] {
+  --bg: #000000;
+  --card: rgba(0, 0, 0, 0.9);
+  --rowA: rgba(0, 255, 65, 0.05);
+  --border: #008f11;
+  --text: #00ff41;
+  --muted: #008f11;
+  --accent: #00ff41;
+  --accent-glow: 0 0 10px #00ff41;
+  --danger: #ff0000;
+  --glass: rgba(0, 0, 0, 0.85);
+  --sticky-bg: rgba(0, 0, 0, 0.95);
+  --font: 'JetBrains Mono', monospace;
 }
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 html, body {
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  font-family: 'Outfit', sans-serif;
+  margin: 0; padding: 0; height: 100%;
+  font-family: var(--font);
   background: var(--bg);
   color: var(--text);
   overflow-x: hidden;
+  transition: background 0.3s, color 0.3s;
 }
 
-/* Animations */
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+canvas#matrix-bg {
+  position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  z-index: -1; opacity: 0.2; display: none;
+}
+[data-theme="matrix"] canvas#matrix-bg { display: block; }
 
-/* Header & Glass Effect */
 header {
   padding: env(safe-area-inset-top, 0) 24px 20px;
   background: var(--glass);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  position: sticky; top: 0; z-index: 500;
+  display: flex; flex-direction: column; align-items: center;
   border-bottom: 1px solid var(--border);
 }
 
 header h1 {
-  margin: 20px 0 10px;
-  font-size: 26px;
-  font-weight: 800;
-  letter-spacing: -0.5px;
-  background: linear-gradient(135deg, #fff 30%, var(--accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  margin: 20px 0 10px; font-size: 26px; font-weight: 800; letter-spacing: -0.5px;
+  text-shadow: var(--accent-glow);
 }
 
-:root[data-theme="light"] header h1 {
-  background: linear-gradient(135deg, #1e293b 30%, var(--accent));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-}
+.container { max-width: 1200px; margin: 0 auto; padding: 20px 16px 140px; display: flex; flex-direction: column; gap: 20px; }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 24px 16px 120px;
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-}
-
-/* Auth Profile Styles */
 #userProfile {
-  display: none;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  background: var(--border);
-  border-radius: 50px;
-  margin-top: 10px;
+  display: none; align-items: center; gap: 10px; padding: 8px 12px;
+  background: var(--border); border-radius: 50px; margin-top: 10px;
 }
+#userPic { width: 28px; height: 28px; border-radius: 50%; border: 1px solid var(--accent); }
 
-#userPic {
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  border: 1px solid var(--accent);
-}
-
-#userName {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--muted);
-}
-
-/* Cards & Controls */
+/* Main Cards */
 .card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 24px;
-  padding: 20px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-  animation: fadeIn 0.5s ease backwards;
+  background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+  padding: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
+[data-theme="matrix"] .card { border-radius: 0; }
 
-.controls {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
+.controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .controls input { grid-column: span 2; }
 
 input, select, button {
-  background: var(--rowA);
-  color: var(--text);
-  border: 1px solid var(--border);
-  padding: 12px 16px;
-  border-radius: 14px;
-  font-family: inherit;
-  font-size: 15px;
-  min-height: 48px;
-  transition: all 0.2s;
+  background: var(--rowA); color: var(--text); border: 1px solid var(--border);
+  padding: 12px; border-radius: 12px; font-family: inherit; font-size: 15px;
 }
+[data-theme="matrix"] input, [data-theme="matrix"] select, [data-theme="matrix"] button { border-radius: 0; }
 
-button {
-  cursor: pointer;
-  font-weight: 600;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
+button.primary { background: var(--accent); color: black; font-weight: 800; border: none; grid-column: span 2; }
 
-button.primary {
-  background: var(--accent);
-  color: white;
-  grid-column: span 2;
-}
+/* Dashboard */
+.dashboard { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.stat { background: var(--rowA); padding: 12px; border-radius: 15px; text-align: center; border: 1px solid var(--border); }
+.stat label { font-size: 11px; color: var(--muted); text-transform: uppercase; display: block; }
+.stat span { font-size: 18px; font-weight: 800; color: var(--accent); display: block; margin-top: 5px; }
 
-button.primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
-button.primary:active { transform: scale(0.98); }
-
-/* Dashboard Stats */
-.dashboard {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-}
-
-.stat {
-  background: var(--rowA);
-  padding: 16px;
-  border-radius: 18px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.stat label { font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; }
-.stat span {
-  font-size: 20px;
-  font-weight: 800;
-  margin-top: 8px;
-  color: var(--accent);
-}
-
-/* Table Design */
+/* Grid Table */
 .table-shell { padding: 0; overflow: hidden; }
-.table-header-row { display: flex; align-items: center; padding: 16px 20px; border-bottom: 1px solid var(--border); }
-.table-header-row h3 { margin: 0; font-size: 18px; }
+.table-header-row { display: flex; padding: 15px 20px; border-bottom: 1px solid var(--border); }
+.table-header-row h3 { margin: 0; font-size: 18px; color: var(--accent); }
 
-.table-wrapper {
-  overflow: auto;
-  -webkit-overflow-scrolling: touch;
-  position: relative;
-}
+.table-wrapper { overflow: auto; position: relative; -webkit-overflow-scrolling: touch; }
+.grid { display: grid; grid-template-columns: 140px repeat(var(--days), 44px) 60px 48px; }
 
-.grid {
-  display: grid;
-  grid-template-columns: 160px repeat(var(--days), 48px) 64px 48px;
-}
+.table-header { background: var(--bg); position: sticky; top: 0; z-index: 200; border-bottom: 2px solid var(--border); }
+.table-header div { padding: 12px 0; text-align: center; font-weight: 700; font-size: 12px; color: var(--muted); }
 
-.table-header {
-  background: var(--bg);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  border-bottom: 1px solid var(--border);
-}
+.row { border-bottom: 1px solid var(--border); }
+.row:nth-child(even) { background: var(--rowA); }
 
-.table-header div {
-  padding: 12px 0;
-  text-align: center;
-  font-weight: 600;
-  font-size: 13px;
-  color: var(--muted);
-}
+.cell { padding: 6px; display: flex; align-items: center; justify-content: center; border-right: 1px solid var(--border); }
 
-.row { border-bottom: 1px solid var(--border); transition: background 0.2s; }
-.row:hover { background: rgba(255,255,255,0.02); }
-
-.cell {
-  padding: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-right: 1px solid var(--border);
-}
-
-/* IMPORTANT FIX: Sticky column z-index and width */
+/* THE OVERLAY FIX: Glassmorphic Sticky Column */
 .cell.habit-name {
   justify-content: flex-start;
-  font-weight: 600;
-  font-size: 14px;
-  position: sticky;
-  left: 0;
-  background: var(--card) !important;
-  padding-left: 20px;
-  z-index: 150;
+  position: sticky; left: 0; z-index: 250;
+  background: var(--sticky-bg) !important;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  padding-left: 15px; font-weight: 600; font-size: 13px;
   border-right: 2px solid var(--accent);
-  box-shadow: 4px 0 10px rgba(0,0,0,0.1);
+  box-shadow: 4px 0 10px rgba(0,0,0,0.2);
 }
 
-:root[data-theme="light"] .cell.habit-name { box-shadow: 4px 0 10px rgba(0,0,0,0.05); }
-
-/* Checkbox Style */
 .box {
-  width: 32px;
-  height: 32px;
-  border-radius: 10px;
-  background: var(--border);
-  cursor: pointer;
-  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: 28px; height: 28px; border-radius: 8px; border: 1px solid var(--border);
+  cursor: pointer; transition: 0.2s; display: flex; align-items: center; justify-content: center;
 }
+.box.checked { background: var(--accent); box-shadow: 0 0 10px var(--accent-glow); }
+.box.checked::after { content: "✓"; color: black; font-weight: 900; }
+[data-theme="matrix"] .box.checked::after { content: "■"; }
 
-.box.checked {
-  background: var(--accent);
-  box-shadow: 0 0 15px var(--accent-glow);
-  transform: scale(1.05);
-}
+/* Yearly */
+.yearly-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.month-item { background: var(--rowA); padding: 10px; border-radius: 12px; border: 1px solid var(--border); text-align: center; }
+.month-item label { font-size: 10px; color: var(--muted); }
+.month-item b { display: block; font-size: 14px; color: var(--accent); }
 
-.box.checked::after { content: "✓"; color: white; font-weight: bold; font-size: 16px; }
-.box:active { transform: scale(0.9); }
-
-.delete { color: var(--muted); cursor: pointer; transition: color 0.2s; }
-.delete:hover { color: var(--danger); }
-
-.today { background: rgba(16, 185, 129, 0.08) !important; }
-
-/* Yearly Overview */
-.yearly-section h3 { margin: 0 0 16px; font-size: 18px; }
-.yearly-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
-.month-item { background: var(--rowA); padding: 12px; border-radius: 16px; text-align: center; display: flex; flex-direction: column; gap: 4px; }
-.month-item label { font-size: 11px; color: var(--muted); font-weight: 600; }
-.month-item b { font-size: 16px; color: var(--accent); }
-
-/* Bottom Navbar */
+/* Footer Nav */
 .nav-bar {
-  position: fixed;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: var(--glass);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  position: fixed; bottom: 0; left: 0; right: 0;
+  background: var(--glass); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   border-top: 1px solid var(--border);
   padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0));
-  display: flex;
-  justify-content: space-around;
-  z-index: 200;
+  display: flex; justify-content: space-around; z-index: 600;
 }
+.nav-item { background: none; border: none; color: var(--muted); font-size: 11px; font-weight: 800; cursor: pointer; border-radius: 0; min-height: auto; padding: 10px 0; }
+.nav-item.active { color: var(--accent); }
 
-.nav-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  color: var(--muted);
-  border: none;
-  background: none;
-  padding: 8px;
-  min-width: 60px;
-  min-height: auto;
-}
-
-.nav-active { color: var(--accent); }
-.nav-icon { font-size: 22px; }
-
-/* Mobile Responsiveness */
 @media (max-width: 600px) {
   .dashboard { grid-template-columns: 1fr; }
-  .grid { grid-template-columns: 130px repeat(var(--days), 44px) 60px 48px; }
-  .stat { flex-direction: row; align-items: center; }
+  .grid { grid-template-columns: 120px repeat(var(--days), 40px) 54px 44px; }
+  .stat { flex-direction: row; display: flex; justify-content: space-between; align-items: center; }
   .stat span { margin-top: 0; }
   .yearly-grid { grid-template-columns: repeat(3, 1fr); }
-  
-  /* Extra safeguard for sticky names on small screens */
-  .cell.habit-name { width: 130px; }
 }
 
 </style>
 </head>
 <body>
+
+<canvas id="matrix-bg"></canvas>
 
 <header>
   <h1>HABIT TRACKER</h1>
@@ -350,12 +198,12 @@ button.primary:active { transform: scale(0.98); }
   </div>
 </header>
 
-<div class="container" id="appContent">
+<div class="container">
   
   <div class="card dashboard">
-    <div class="stat"><label>Overall</label><span id="overall">0%</span></div>
-    <div class="stat"><label>Goal Reached</label><span id="best">-</span></div>
-    <div class="stat"><label>Needs Focus</label><span id="worst">-</span></div>
+    <div class="stat"><label>Efficiency</label><span id="overall">0%</span></div>
+    <div class="stat"><label>Top Goal</label><span id="best">-</span></div>
+    <div class="stat"><label>Focus Needed</label><span id="worst">-</span></div>
   </div>
 
   <div class="card table-shell">
@@ -370,36 +218,75 @@ button.primary:active { transform: scale(0.98); }
     <div class="controls">
       <select id="year"></select>
       <select id="month"></select>
-      <input id="newHabit" placeholder="New habit name..." enterkeyhint="done">
-      <button onclick="addHabit()" class="primary">Add Ritual</button>
-      <button id="loginBtn">Login to Sync</button>
-      <button id="logoutBtn" style="display:none">Logout</button>
+      <input id="newHabit" placeholder="Log new habit..." enterkeyhint="done">
+      <button onclick="addHabit()" class="primary">INSERT HABIT</button>
+      <button id="loginBtn" style="font-size: 11px;">ACCESS CLOUD</button>
+      <button id="logoutBtn" style="display:none; font-size: 11px;">DISCONNECT</button>
     </div>
   </div>
 
   <div class="card yearly-section">
-    <h3>Insights</h3>
+    <h3>DATA INSIGHTS</h3>
     <div id="yearly" class="yearly-grid"></div>
   </div>
 </div>
 
 <nav class="nav-bar">
-  <button class="nav-item nav-active" onclick="window.scrollTo({top:0, behavior:'smooth'})">
-    <span class="nav-icon">🏠</span><span style="font-size: 10px;">Home</span>
-  </button>
-  <button class="nav-item" onclick="toggleTheme()">
-    <span class="nav-icon">🌓</span><span style="font-size: 10px;">Theme</span>
-  </button>
-  <button class="nav-item" onclick="exportCSV()">
-    <span class="nav-icon">📤</span><span style="font-size: 10px;">Export</span>
-  </button>
-  <button class="nav-item" onclick="showInstallPrompt()" id="installBtnItem">
-    <span class="nav-icon">📲</span><span style="font-size: 10px;">Install</span>
-  </button>
+  <button class="nav-item" onclick="window.scrollTo({top:0, behavior:'smooth'})">HOME</button>
+  <button class="nav-item" onclick="nextTheme()" id="themeBtn">THEME: DARK</button>
+  <button class="nav-item" onclick="exportCSV()">EXPORT</button>
+  <button class="nav-item" onclick="showInstallPrompt()">SYNC APP</button>
 </nav>
 
 <script>
-/* CORE LOGIC PRESERVATION */
+/* THEME SWITCHER LOGIC */
+const themes = ["dark", "light", "matrix"];
+let currentThemeIdx = themes.indexOf(localStorage.getItem("theme") || "dark");
+if(currentThemeIdx === -1) currentThemeIdx = 0;
+
+function applyTheme(idx) {
+  const t = themes[idx];
+  document.documentElement.setAttribute("data-theme", t);
+  localStorage.setItem("theme", t);
+  document.getElementById("themeBtn").innerText = `THEME: ${t.toUpperCase()}`;
+  if(t === "matrix") startMatrix(); else stopMatrix();
+}
+
+function nextTheme() {
+  currentThemeIdx = (currentThemeIdx + 1) % themes.length;
+  applyTheme(currentThemeIdx);
+}
+applyTheme(currentThemeIdx);
+
+/* MATRIX LOGIC */
+const canvas = document.getElementById('matrix-bg');
+const ctx = canvas.getContext('2d');
+let matrixInterval = null;
+
+function startMatrix() {
+  if(matrixInterval) return;
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  const chars = "0123456789ABCDEFHIJKLMNOPQRSTUVWXYZアイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン";
+  const fontSize = 16;
+  const columns = canvas.width / fontSize;
+  const drops = Array(Math.floor(columns)).fill(1);
+  matrixInterval = setInterval(() => {
+    ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = '#10b981';
+    ctx.font = fontSize + 'px monospace';
+    for (let i = 0; i < drops.length; i++) {
+      const text = chars[Math.floor(Math.random() * chars.length)];
+      ctx.fillText(text, i * fontSize, drops[i] * fontSize);
+      if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) drops[i] = 0;
+      drops[i]++;
+    }
+  }, 33);
+}
+function stopMatrix() { clearInterval(matrixInterval); matrixInterval = null; }
+
+/* CORE APP LOGIC */
 let USER_KEY = "guest";
 function setUser(uid) { USER_KEY = uid || "guest" }
 function ukey(k) { return USER_KEY + "::" + k }
@@ -409,14 +296,11 @@ let habits = JSON.parse(localStorage.getItem(ukey("habit-list"))) || [
   "Sleep Before 11 PM", "Meditation", "No Junk Food", "Work on Goals"
 ];
 
-const yearSel = document.getElementById("year");
-const monthSel = document.getElementById("month");
-const header = document.getElementById("header");
-const body = document.getElementById("body");
+const yearSel = document.getElementById("year"), monthSel = document.getElementById("month");
+const header = document.getElementById("header"), body = document.getElementById("body");
 
 const now = new Date();
 const currentYear = now.getFullYear();
-
 for(let y = currentYear - 2; y <= currentYear + 5; y++) {
   let o = document.createElement("option"); o.value = y; o.text = y;
   if(y === currentYear) o.selected = true;
@@ -444,8 +328,7 @@ function addHabit() {
   habits.push(i.value.trim());
   saveHabits();
   syncToCloud(ukey("habit-list"), JSON.stringify(habits));
-  i.value = "";
-  render();
+  i.value = ""; render();
 }
 
 function removeHabit(h) {
@@ -469,9 +352,7 @@ function render() {
   header.style.setProperty("--days", days);
   body.style.setProperty("--days", days);
   header.innerHTML = "<div>Habit</div>";
-  for(let d = 1; d <= days; d++) {
-    header.innerHTML += `<div class="${isTodayCell(y, m, d) ? "today" : ""}">${d}</div>`;
-  }
+  for(let d = 1; d <= days; d++) header.innerHTML += `<div>${d}</div>`;
   header.innerHTML += "<div>%</div><div>🗑</div>";
 
   let totalP = 0, best = { n: "-", v: -1 }, worst = { n: "-", v: 101 };
@@ -482,25 +363,18 @@ function render() {
     const row = document.createElement("div");
     row.className = "grid row";
     row.innerHTML = `<div class="cell habit-name">${h}</div>`;
-
     for(let d = 1; d <= days; d++) {
       const c = localStorage.getItem(ukey(key(y, m, h, d))) === "true";
       if(c) done++;
-      row.innerHTML += `
-        <div class="cell ${isTodayCell(y, m, d) ? "today" : ""}">
-          <div class="box ${c ? "checked" : ""}" onclick="toggle('${h}', ${d})"></div>
-        </div>`;
+      row.innerHTML += `<div class="cell ${isTodayCell(y, m, d) ? "today" : ""}"><div class="box ${c ? "checked" : ""}" onclick="toggle('${h}', ${d})"></div></div>`;
     }
     const p = Math.round(done / days * 100);
     totalP += p;
     if(p > best.v) best = { n: h, v: p };
     if(p < worst.v) worst = { n: h, v: p };
-
-    row.innerHTML += `<div class="cell" style="font-weight:800;color:var(--accent)">${p}%</div>`;
-    row.innerHTML += `<div class="cell delete" onclick="removeHabit('${h}')">✕</div>`;
+    row.innerHTML += `<div class="cell" style="font-weight:800;color:var(--accent)">${p}%</div><div class="cell" onclick="removeHabit('${h}')" style="cursor:pointer">✕</div>`;
     body.appendChild(row);
   });
-
   document.getElementById("overall").innerText = Math.round(totalP / (habits.length || 1)) + "%";
   document.getElementById("best").innerText = best.n;
   document.getElementById("worst").innerText = worst.n;
@@ -508,25 +382,19 @@ function render() {
 }
 
 function yearly(y) {
-  const box = document.getElementById("yearly");
-  box.innerHTML = "";
+  const box = document.getElementById("yearly"); box.innerHTML = "";
   for(let m = 0; m < 12; m++) {
-    let days = daysInMonth(y, m), sum = 0;
+    let dInM = daysInMonth(y, m), sum = 0;
     habits.forEach(h => {
       let d = 0;
-      for(let i = 1; i <= days; i++) if(localStorage.getItem(ukey(key(y, m, h, i))) === "true") d++;
-      sum += d / days * 100;
+      for(let i = 1; i <= dInM; i++) if(localStorage.getItem(ukey(key(y, m, h, i))) === "true") d++;
+      sum += d / dInM * 100;
     });
-    box.innerHTML += `
-      <div class="month-item">
-        <label>${new Date(y, m).toLocaleString("default", { month: "short" })}</label>
-        <b>${Math.round(sum / (habits.length || 1))}%</b>
-      </div>`;
+    box.innerHTML += `<div class="month-item"><label>${new Date(y, m).toLocaleString("default", { month: "short" })}</label><b>${Math.round(sum / (habits.length || 1))}%</b></div>`;
   }
 }
 
-yearSel.onchange = render;
-monthSel.onchange = render;
+yearSel.onchange = render; monthSel.onchange = render;
 render();
 
 function exportCSV() {
@@ -539,39 +407,17 @@ function exportCSV() {
   });
   const a = document.createElement("a");
   a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
-  a.download = `habits-${y}-${m + 1}.csv`;
-  a.click();
+  a.download = `habits-${y}-${m + 1}.csv`; a.click();
 }
 
-function toggleTheme() {
-  const r = document.documentElement;
-  r.dataset.theme = r.dataset.theme === "light" ? "dark" : "light";
-  localStorage.setItem("theme", r.dataset.theme);
-}
-document.documentElement.dataset.theme = localStorage.getItem("theme") || "dark";
-
-/* Register PWA Service Worker */
+/* PWA */
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').then(() => console.log("Service Worker Registered"));
-  });
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js'));
 }
-
 let deferredPrompt;
-window.addEventListener('beforeinstallprompt', (e) => {
-  e.preventDefault();
-  deferredPrompt = e;
-  document.getElementById('installBtnItem').style.display = 'flex';
-});
-
+window.addEventListener('beforeinstallprompt', (e) => { e.preventDefault(); deferredPrompt = e; });
 async function showInstallPrompt() {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    const { outcome } = await deferredPrompt.userChoice;
-    if (outcome === 'accepted') deferredPrompt = null;
-  } else {
-    alert("To install: Open browser menu -> Install or Add to Home Screen");
-  }
+  if (deferredPrompt) { deferredPrompt.prompt(); } else { alert("Use browser menu to install"); }
 }
 </script>
 
@@ -591,18 +437,14 @@ async function syncToCloudInternal(key, value) {
   if (USER_KEY === "guest") return;
   try {
     await setDoc(doc(db, "users", USER_KEY), { [key]: { value, updatedAt: Date.now() } }, { merge: true });
-  } catch (e) {
-    console.error("Sync error:", e);
-  }
+  } catch (e) { console.error("Sync error:", e); }
 }
 window.syncToCloud = syncToCloudInternal;
 
 const loginBtn = document.getElementById("loginBtn"), logoutBtn = document.getElementById("logoutBtn");
 const userProfile = document.getElementById("userProfile"), userPic = document.getElementById("userPic"), userName = document.getElementById("userName");
 
-loginBtn.onclick = () => signInWithPopup(auth, provider).catch(e => {
-  if (e.code === 'auth/unauthorized-domain') alert("Authorize your domain in Firebase Console first.");
-});
+loginBtn.onclick = () => signInWithPopup(auth, provider);
 logoutBtn.onclick = () => signOut(auth);
 
 let unsub = null;
@@ -612,19 +454,15 @@ onAuthStateChanged(auth, user => {
     setUser(user.uid);
     loginBtn.style.display = "none"; logoutBtn.style.display = "block";
     userProfile.style.display = "flex"; userPic.src = user.photoURL; userName.textContent = user.displayName;
-    
     unsub = onSnapshot(doc(db, "users", user.uid), snap => {
-      const data = snap.data();
-      if (!data) return;
+      const data = snap.data(); if (!data) return;
       Object.keys(data).forEach(k => { if (data[k] && data[k].value !== undefined) localStorage.setItem(k, data[k].value) });
       habits = JSON.parse(localStorage.getItem(ukey("habit-list"))) || habits;
       render();
     });
   } else {
-    setUser(null);
-    loginBtn.style.display = "block"; logoutBtn.style.display = "none";
-    userProfile.style.display = "none";
-    render();
+    setUser(null); loginBtn.style.display = "block"; logoutBtn.style.display = "none";
+    userProfile.style.display = "none"; render();
   }
 });
 </script>
