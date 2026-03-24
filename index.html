@@ -20,16 +20,19 @@
 <style>
 :root {
   --bg: #000000;
-  --card: rgba(0, 0, 0, 0.85);
-  --rowA: rgba(0, 255, 65, 0.05);
+  --card: rgba(0, 0, 0, 0.9);
+  --rowA: rgba(0, 0, 0, 0.9);
   --rowB: rgba(0, 0, 0, 0.9);
   --border: #008f11;
   --text: #00ff41;
   --muted: #008f11;
   --accent: #00ff41;
   --accent-glow: 0 0 12px #00ff41;
+  
+  --amber: #ffb000;
+  --cyan: #00e5ff;
   --danger: #ff0000;
-  --glass: rgba(0, 0, 0, 0.92);
+  --glass: rgba(0, 0, 0, 0.95);
 }
 
 * {
@@ -55,7 +58,7 @@ html, body {
   width: 100%;
   height: 100%;
   z-index: -1;
-  opacity: 0.35;
+  opacity: 0.15;
 }
 
 /* Header & Digital Effect */
@@ -64,12 +67,12 @@ header {
   background: var(--glass);
   position: sticky;
   top: 0;
-  z-index: 100;
+  z-index: 300;
   display: flex;
   flex-direction: column;
   align-items: center;
-  border-bottom: 2px solid var(--border);
-  box-shadow: 0 0 20px var(--border);
+  border-bottom: 2px solid var(--cyan);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.3);
 }
 
 header h1 {
@@ -78,13 +81,14 @@ header h1 {
   font-weight: 800;
   letter-spacing: 2px;
   text-transform: uppercase;
-  text-shadow: var(--accent-glow);
+  color: var(--cyan);
+  text-shadow: 0 0 10px var(--cyan);
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 20px 12px 120px;
+  padding: 20px 12px 140px;
   display: flex;
   flex-direction: column;
   gap: 16px;
@@ -95,8 +99,8 @@ header h1 {
   align-items: center;
   gap: 10px;
   padding: 6px 12px;
-  background: rgba(0, 255, 65, 0.1);
-  border: 1px solid var(--border);
+  background: rgba(0, 229, 255, 0.1);
+  border: 1px solid var(--cyan);
   margin-top: 5px;
 }
 
@@ -104,10 +108,10 @@ header h1 {
   width: 24px;
   height: 24px;
   border-radius: 0;
-  border: 1px solid var(--accent);
+  border: 1px solid var(--cyan);
 }
 
-#userName { font-size: 11px; font-weight: 400; color: var(--accent); }
+#userName { font-size: 11px; font-weight: 400; color: var(--cyan); }
 
 /* Terminal Cards */
 .card {
@@ -115,7 +119,7 @@ header h1 {
   border: 1px solid var(--border);
   border-radius: 0;
   padding: 16px;
-  box-shadow: inset 0 0 15px rgba(0, 255, 65, 0.1);
+  box-shadow: inset 0 0 15px rgba(0, 255, 65, 0.05);
   position: relative;
 }
 
@@ -129,13 +133,16 @@ header h1 {
   background: rgba(0, 255, 65, 0.2);
 }
 
+.controls-card { border-color: var(--cyan); box-shadow: inset 0 0 15px rgba(0, 229, 255, 0.05); }
+.yearly-card { border-color: var(--amber); box-shadow: inset 0 0 15px rgba(255, 176, 0, 0.05); }
+
 .controls {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 8px;
 }
 
-#newHabit { grid-column: span 2; }
+#newHabit { grid-column: span 2; border-color: var(--cyan); }
 
 input, select, button {
   background: black;
@@ -145,10 +152,10 @@ input, select, button {
   border-radius: 0;
   font-family: inherit;
   font-size: 14px;
-  transition: 0.2s;
 }
 
 input::placeholder { color: var(--muted); opacity: 0.5; }
+input:focus, select:focus { border-color: var(--cyan); box-shadow: 0 0 8px var(--cyan); }
 
 button {
   cursor: pointer;
@@ -157,14 +164,14 @@ button {
 }
 
 button.primary {
-  background: var(--accent);
+  background: var(--cyan);
   color: black;
   grid-column: span 2;
-  box-shadow: var(--accent-glow);
+  box-shadow: 0 0 12px var(--cyan);
+  border-color: var(--cyan);
 }
 
-button:hover { background: rgba(0, 255, 65, 0.1); color: var(--accent); border-color: var(--accent); }
-button.primary:hover { background: #008f11; color: #fff; }
+button:active { transform: scale(0.98); }
 
 /* Dashboard Terminal Stats */
 .dashboard {
@@ -173,13 +180,16 @@ button.primary:hover { background: #008f11; color: #fff; }
   gap: 8px;
 }
 
-.stat {
-  background: rgba(0, 255, 65, 0.05);
-  padding: 12px;
-  border: 1px solid var(--border);
-}
+.stat { background: rgba(0, 0, 0, 0.8); padding: 12px; border: 1px solid var(--border); }
+.stat.eff { border-color: var(--amber); box-shadow: 0 0 10px rgba(255, 176, 0, 0.2); }
+.stat.top { border-color: var(--accent); box-shadow: 0 0 10px rgba(0, 255, 65, 0.2); }
+.stat.weak { border-color: var(--danger); box-shadow: 0 0 10px rgba(255, 0, 0, 0.2); }
 
-.stat label { font-size: 10px; color: var(--muted); text-transform: uppercase; }
+.stat label { font-size: 10px; text-transform: uppercase; opacity: 0.8; }
+.stat.eff label { color: var(--amber); }
+.stat.top label { color: var(--accent); }
+.stat.weak label { color: var(--danger); }
+
 .stat span {
   font-size: 18px;
   font-weight: 800;
@@ -187,19 +197,22 @@ button.primary:hover { background: #008f11; color: #fff; }
   margin-top: 5px;
   word-break: break-all;
 }
+.stat.eff span { color: var(--amber); }
+.stat.top span { color: var(--accent); }
+.stat.weak span { color: var(--danger); }
 
 /* Table Digital Design */
-.table-shell { padding: 0; }
+.table-shell { padding: 0; border-color: var(--cyan); }
 .table-header-row {
   display: flex;
   padding: 12px 16px;
-  background: rgba(0, 255, 65, 0.15);
-  border-bottom: 2px solid var(--border);
+  background: rgba(0, 229, 255, 0.2);
+  border-bottom: 2px solid var(--cyan);
 }
 
-.table-header-row h3 { margin: 0; font-size: 16px; letter-spacing: 1px; }
+.table-header-row h3 { margin: 0; font-size: 16px; color: var(--cyan); text-shadow: 0 0 5px var(--cyan); letter-spacing: 1px; }
 
-.table-wrapper { overflow: auto; }
+.table-wrapper { overflow: auto; position: relative; }
 
 .grid {
   display: grid;
@@ -207,11 +220,11 @@ button.primary:hover { background: #008f11; color: #fff; }
 }
 
 .table-header {
-  background: black;
+  background: #000;
   position: sticky;
   top: 0;
-  z-index: 20;
-  border-bottom: 2px solid var(--border);
+  z-index: 100;
+  border-bottom: 2px solid var(--cyan);
 }
 
 .table-header div {
@@ -219,10 +232,12 @@ button.primary:hover { background: #008f11; color: #fff; }
   text-align: center;
   font-size: 11px;
   border-right: 1px solid var(--border);
+  background: #000;
+  color: var(--cyan);
 }
 
-.row { border-bottom: 1px solid var(--border); }
-.row:nth-child(even) { background: var(--rowA); }
+.row { border-bottom: 1px solid var(--border); background: #000; }
+.row:nth-child(even) { background: #050505; }
 
 .cell {
   padding: 4px;
@@ -237,16 +252,19 @@ button.primary:hover { background: #008f11; color: #fff; }
   font-size: 12px;
   position: sticky;
   left: 0;
-  background: black;
+  background: #000 !important;
   padding-left: 10px;
-  z-index: 10;
-  border-right: 2px solid var(--border);
+  z-index: 150;
+  border-right: 2px solid var(--cyan);
+  color: var(--accent);
 }
+
+.row:nth-child(even) .cell.habit-name { background: #050505 !important; }
 
 /* Checkbox Style: Terminal Square */
 .box {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border: 1px solid var(--border);
   background: transparent;
   cursor: pointer;
@@ -265,14 +283,14 @@ button.primary:hover { background: #008f11; color: #fff; }
 .delete { cursor: pointer; color: var(--muted); font-size: 14px; }
 .delete:hover { color: var(--danger); text-shadow: 0 0 5px var(--danger); }
 
-.today { border: 1px solid var(--accent); background: rgba(0, 255, 65, 0.1) !important; }
+.today { background: rgba(0, 229, 255, 0.1) !important; color: var(--cyan); }
 
 /* Yearly Terminal */
-.yearly-section h3 { font-size: 16px; text-transform: uppercase; border-bottom: 1px solid var(--border); margin-bottom: 12px; padding-bottom: 4px; }
+.yearly-section h3 { font-size: 16px; text-transform: uppercase; color: var(--amber); border-bottom: 1px solid var(--amber); margin-bottom: 12px; padding-bottom: 4px; }
 .yearly-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-.month-item { border: 1px solid var(--border); padding: 8px; text-align: center; background: rgba(0, 255, 65, 0.05); }
-.month-item label { font-size: 10px; display: block; }
-.month-item b { font-size: 13px; margin-top: 4px; display: block; }
+.month-item { border: 1px solid var(--amber); padding: 8px; text-align: center; background: rgba(255, 176, 0, 0.05); }
+.month-item label { font-size: 10px; display: block; color: var(--amber); }
+.month-item b { font-size: 13px; margin-top: 4px; display: block; color: var(--amber); }
 
 /* Global Digital Overlays */
 .nav-bar {
@@ -281,29 +299,32 @@ button.primary:hover { background: #008f11; color: #fff; }
   left: 0;
   right: 0;
   background: var(--glass);
-  border-top: 2px solid var(--border);
+  border-top: 2px solid var(--cyan);
   display: flex;
   justify-content: space-around;
   z-index: 200;
   padding-bottom: env(safe-area-inset-bottom, 0);
+  box-shadow: 0 0 20px rgba(0, 229, 255, 0.2);
 }
 
 .nav-item {
-  color: var(--accent);
+  color: var(--cyan);
   background: transparent;
   border: none;
   font-size: 10px;
-  padding: 12px 4px;
+  padding: 14px 4px;
   text-transform: uppercase;
   flex: 1;
+  font-weight: 700;
 }
 
-.nav-item:active { background: var(--accent); color: black; }
+.nav-item:active { background: var(--cyan); color: black; }
 
 @media (max-width: 600px) {
   .dashboard { grid-template-columns: 1fr; }
   .stat { flex-direction: row; justify-content: space-between; align-items: center; }
   .stat span { margin-top: 0; font-size: 16px; }
+  .grid { grid-template-columns: 120px repeat(var(--days), 38px) 54px 38px; }
   .yearly-grid { grid-template-columns: repeat(3, 1fr); }
 }
 
@@ -324,9 +345,9 @@ button.primary:hover { background: #008f11; color: #fff; }
 <div class="container" id="appContent">
   
   <div class="card dashboard">
-    <div class="stat"><label>EFFICIENCY</label><span id="overall">0%</span></div>
-    <div class="stat"><label>TOP_NODE</label><span id="best">-</span></div>
-    <div class="stat"><label>WEAK_NODE</label><span id="worst">-</span></div>
+    <div class="stat eff"><label>EFFICIENCY</label><span id="overall">0%</span></div>
+    <div class="stat top"><label>TOP_NODE</label><span id="best">-</span></div>
+    <div class="stat weak"><label>WEAK_NODE</label><span id="worst">-</span></div>
   </div>
 
   <div class="card table-shell">
@@ -337,18 +358,18 @@ button.primary:hover { background: #008f11; color: #fff; }
     </div>
   </div>
 
-  <div class="card">
+  <div class="card controls-card">
     <div class="controls">
       <select id="year"></select>
       <select id="month"></select>
       <input id="newHabit" placeholder="NEW_DATABASE_ENTRY..." enterkeyhint="done">
       <button onclick="addHabit()" class="primary">INSERT ENTRY</button>
-      <button id="loginBtn" style="font-size: 11px;">AUTH_ACCESS</button>
-      <button id="logoutBtn" style="display:none; font-size: 11px;">TERM_SESSION</button>
+      <button id="loginBtn" style="color:var(--cyan); border-color:var(--cyan); font-size: 11px;">AUTH_ACCESS</button>
+      <button id="logoutBtn" style="display:none; color:var(--cyan); border-color:var(--cyan); font-size: 11px;">TERM_SESSION</button>
     </div>
   </div>
 
-  <div class="card yearly-section">
+  <div class="card yearly-card yearly-section">
     <h3>DATA_INSIGHTS</h3>
     <div id="yearly" class="yearly-grid"></div>
   </div>
@@ -358,11 +379,11 @@ button.primary:hover { background: #008f11; color: #fff; }
   <button class="nav-item" onclick="window.scrollTo({top:0, behavior:'smooth'})">HOME</button>
   <button class="nav-item" onclick="exportCSV()">BACKUP</button>
   <button class="nav-item" onclick="showInstallPrompt()" id="installBtnItem">SYNC_APP</button>
-  <button class="nav-item" id="terminal-info">TERM_v2.4.1</button>
+  <button class="nav-item" style="color:var(--muted)">v2.4.2</button>
 </nav>
 
 <script>
-/* MATRIX RAIN EFFECT */
+/* MATRIX RAIN EFFECT - ENHANCED COLOR */
 const canvas = document.getElementById('matrix-bg');
 const ctx = canvas.getContext('2d');
 
@@ -377,15 +398,16 @@ const chars = "0123456789ABCDEFHIJKLMNOPQRSTUVWXYZアイウエオカキクケコ
 const fontSize = 16;
 const columns = canvas.width / fontSize;
 const drops = Array(Math.floor(columns)).fill(1);
+const colors = ["#00ff41", "#008f11", "#00e5ff", "#007a8a"];
 
 function draw() {
   ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
-  ctx.fillStyle = '#00ff41';
   ctx.font = fontSize + 'px monospace';
 
   for (let i = 0; i < drops.length; i++) {
     const text = chars[Math.floor(Math.random() * chars.length)];
+    ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
     ctx.fillText(text, i * fontSize, drops[i] * fontSize);
     if (drops[i] * fontSize > canvas.height && Math.random() > 0.975) {
       drops[i] = 0;
