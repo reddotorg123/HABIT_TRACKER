@@ -2,659 +2,711 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>HABIT TRACKER</title>
+<title>Habit Pro | Build Better Rituals</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#0b0f14">
+
+<!-- Google Fonts -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
 
 <link rel="icon" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0b0f14">
 
 <style>
-:root{
-  --bg:#0b0f14;
-  --card:#141922;
-  --rowA:#161c26;
-  --rowB:#121722;
-  --border:#2a3244;
-  --text:#ffffff;
-  --muted:#9aa4b2;
-  --accent:#00e676;
-  --danger:#ff4d4d;
+:root {
+  --bg: #0b0f14;
+  --card: #141922;
+  --rowA: #1a202c;
+  --rowB: #141922;
+  --border: rgba(255, 255, 255, 0.08);
+  --text: #ffffff;
+  --muted: #94a3b8;
+  --accent: #10b981;
+  --accent-glow: rgba(16, 185, 129, 0.4);
+  --danger: #ef4444;
+  --glass: rgba(20, 25, 34, 0.7);
 }
 
-:root[data-theme="light"]{
-  --bg:#f4f6fb;
-  --card:#ffffff;
-  --rowA:#f0f2f8;
-  --rowB:#ffffff;
-  --border:#dcdcdc;
-  --text:#000000;
+:root[data-theme="light"] {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --rowA: #f1f5f9;
+  --rowB: #ffffff;
+  --border: #e2e8f0;
+  --text: #1e293b;
+  --muted: #64748b;
+  --accent: #059669;
+  --accent-glow: rgba(5, 150, 105, 0.2);
+  --glass: rgba(255, 255, 255, 0.8);
 }
 
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-
-html{scroll-behavior:smooth}
-
-body{
-  margin:0;
-  font-family:Inter,Segoe UI,Arial,sans-serif;
-  background:var(--bg);
-  color:var(--text);
-  padding-bottom:env(safe-area-inset-bottom,0);
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  outline: none;
 }
 
-header{
-  padding:18px;
-  padding-top:calc(18px + env(safe-area-inset-top,0));
-  text-align:center;
-  font-size:22px;
-  font-weight:800;
-  background:linear-gradient(135deg,#141e30,#243b55);
-  position:sticky;
-  top:0;
-  z-index:100;
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: 'Outfit', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  overflow-x: hidden;
 }
 
-.container{
-  max-width:1600px;
-  margin:auto;
-  padding:16px;
-  display:grid;
-  gap:16px;
-  padding-bottom:80px;
+/* Animations */
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* Header & Glass Effect */
+header {
+  padding: env(safe-area-inset-top, 0) 24px 20px;
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  border-bottom: 1px solid var(--border);
 }
 
-.card{
-  background:var(--card);
-  border:1px solid var(--border);
-  border-radius:16px;
-  padding:16px;
+header h1 {
+  margin: 20px 0 10px;
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  background: linear-gradient(135deg, #fff 30%, var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-.controls{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  align-items:center;
+:root[data-theme="light"] header h1 {
+  background: linear-gradient(135deg, #1e293b 30%, var(--accent));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
-input,select,button{
-  background:#1b2230;
-  color:var(--text);
-  border:1px solid var(--border);
-  padding:10px 14px;
-  border-radius:10px;
-  font-size:15px;
-  min-height:44px;
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 24px 16px 120px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
-button{cursor:pointer}
-button:hover{opacity:.85}
-
-/* Dashboard */
-.dashboard{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:14px;
+/* Auth Profile Styles */
+#userProfile {
+  display: none;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--border);
+  border-radius: 50px;
+  margin-top: 10px;
 }
 
-.stat{
-  background:#1b2230;
-  border-radius:14px;
-  padding:16px;
+#userPic {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--accent);
 }
 
-.stat span{
-  display:block;
-  margin-top:6px;
-  font-size:22px;
-  font-weight:800;
+#userName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted);
 }
 
-/* Table */
-.table-shell{
-  border-radius:16px;
-  border:1px solid var(--border);
-  overflow:auto;
-  max-height:450px;
-  -webkit-overflow-scrolling:touch;
+/* Cards & Controls */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+  animation: fadeIn 0.5s ease backwards;
 }
 
-.table-wrapper{min-width:max-content}
-
-.grid{
-  display:grid;
-  grid-template-columns:
-    240px
-    repeat(var(--days), 44px)
-    70px
-    60px;
+.controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
-.table-header{
-  position:sticky;
-  top:0;
-  z-index:10;
-  background:#1b2230;
+.controls input {
+  grid-column: span 2;
 }
 
-.table-header div{
-  padding:10px;
-  text-align:center;
-  border-right:1px solid var(--border);
-  font-weight:700;
+input, select, button {
+  background: var(--rowA);
+  color: var(--text);
+  border: 1px solid var(--border);
+  padding: 12px 16px;
+  border-radius: 14px;
+  font-family: inherit;
+  font-size: 15px;
+  min-height: 48px;
+  transition: all 0.2s;
 }
 
-.row:nth-child(even){background:var(--rowA)}
-.row:nth-child(odd){background:var(--rowB)}
-
-.cell{
-  padding:8px;
-  text-align:center;
-  border-right:1px solid var(--border);
-  display:flex;
-  align-items:center;
-  justify-content:center;
+button {
+  cursor: pointer;
+  font-weight: 600;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
-.habit{
-  font-weight:700;
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
+button.primary {
+  background: var(--accent);
+  color: white;
+  grid-column: span 2;
 }
 
-.box{
-  width:28px;
-  height:28px;
-  border-radius:8px;
-  background:#2a3344;
-  cursor:pointer;
-  transition:transform 0.1s;
-}
-.box:active{transform:scale(0.9)}
-
-.box.checked{
-  background:var(--accent);
-  box-shadow:0 0 6px #00e67688;
+button.primary:hover {
+  filter: brightness(1.1);
+  transform: translateY(-1px);
 }
 
-.delete{
-  cursor:pointer;
-  color:var(--muted);
+button.primary:active {
+  transform: scale(0.98);
 }
 
-.delete:hover{color:var(--danger)}
-
-.today{
-  background:rgba(0,230,118,0.18)!important;
+/* Dashboard Stats */
+.dashboard {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
 }
 
-/* Yearly */
-.yearly{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(90px,1fr));
-  gap:10px;
+.stat {
+  background: var(--rowA);
+  padding: 16px;
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
 
-.month-box{
-  background:#1b2230;
-  border-radius:12px;
-  padding:10px;
-  text-align:center;
+.stat label {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
 }
 
-/* MOBILE ADAPTATIONS */
-@media (max-width: 768px){
-  .container{padding:10px; gap:10px; padding-bottom:100px;}
-  .controls{flex-direction:column; align-items:stretch;}
-  .controls input, .controls select, .controls button{width:100%;}
-  .desktop-only{display:none !important;}
-  .grid{grid-template-columns:140px repeat(var(--days), 40px) 60px 44px;}
-  .box{width:30px; height:30px;}
-  .dashboard{grid-template-columns:1fr;}
-  #userProfile{margin-left:0 !important; justify-content:center;}
+.stat span {
+  font-size: 20px;
+  font-weight: 800;
+  margin-top: 8px;
+  color: var(--accent);
 }
 
-/* Bottom mobile bar */
-.mobile-bar{
-  display:none;
-  position:fixed;
-  bottom:0;
-  left:0;
-  right:0;
-  background:linear-gradient(135deg,#141e30,#243b55);
-  border-top:1px solid var(--border);
-  padding:10px;
-  padding-bottom:calc(10px + env(safe-area-inset-bottom,0));
-  z-index:200;
-  justify-content:space-around;
-  gap:10px;
+/* Table Design */
+.table-shell {
+  padding: 0;
+  overflow: hidden;
 }
-.mobile-bar button{flex:1; font-size:18px; background:rgba(255,255,255,0.1); border:none;}
 
-@media (max-width: 768px){ .mobile-bar{display:flex;} }
-
-:root[data-theme="light"] .mobile-bar{background:#e3e7f0; border-top:1px solid #ccc;}
-:root[data-theme="light"] .mobile-bar button{background:rgba(0,0,0,0.05); color:#000;}
-
-/* ================= LIGHT THEME VISIBILITY FIX ================= */
-:root[data-theme="light"] body{color:#111;}
-:root[data-theme="light"] header{background:linear-gradient(135deg,#e3e7f0,#cfd8ea); color:#000;}
-:root[data-theme="light"] .card, :root[data-theme="light"] .stat, :root[data-theme="light"] .table-header, :root[data-theme="light"] .month-box{background:#ffffff; color:#000;}
-:root[data-theme="light"] .row:nth-child(even){background:#f0f2f8;}
-:root[data-theme="light"] .row:nth-child(odd){background:#ffffff;}
-:root[data-theme="light"] input, :root[data-theme="light"] select, :root[data-theme="light"] button{background:#ffffff; color:#000; border:1px solid #ccc;}
-:root[data-theme="light"] .box{background:#d0d4e0;}
-:root[data-theme="light"] .today{background:rgba(0,230,118,0.25)!important;}
-
-/* STICKY COLUMN */
-.row .cell:first-child, .table-header div:first-child{
-  position:sticky; left:0; z-index:50; background:var(--card);
+.table-header-row {
+  display: flex;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
 }
-:root[data-theme="light"] .row .cell:first-child, :root[data-theme="light"] .table-header div:first-child{background:#ffffff;}
 
-.row .cell:first-child::after, .table-header div:first-child::after{
-  content:""; position:absolute; top:0; right:0; width:1px; height:100%; background:rgba(0,0,0,0.1);
+.table-header-row h3 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.table-wrapper {
+  overflow: auto;
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 160px repeat(var(--days), 48px) 64px 48px;
+}
+
+.table-header {
+  background: var(--bg);
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  border-bottom: 1px solid var(--border);
+}
+
+.table-header div {
+  padding: 12px 0;
+  text-align: center;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.row {
+  border-bottom: 1px solid var(--border);
+  transition: background 0.2s;
+}
+
+.row:hover { background: rgba(255,255,255,0.02); }
+
+.cell {
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--border);
+}
+
+.cell.habit-name {
+  justify-content: flex-start;
+  font-weight: 600;
+  font-size: 14px;
+  position: sticky;
+  left: 0;
+  background: var(--card);
+  padding-left: 20px;
+  z-index: 10;
+  border-right: 2px solid var(--border);
+}
+
+/* Checkbox Style */
+.box {
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  background: var(--border);
+  cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.box.checked {
+  background: var(--accent);
+  box-shadow: 0 0 15px var(--accent-glow);
+  transform: scale(1.05);
+}
+
+.box.checked::after {
+  content: "✓";
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.box:active { transform: scale(0.9); }
+
+.delete {
+  color: var(--muted);
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.delete:hover { color: var(--danger); }
+
+.today {
+  background: rgba(16, 185, 129, 0.08) !important;
+}
+
+/* Yearly Overview */
+.yearly-section h3 { margin: 0 0 16px; font-size: 18px; }
+
+.yearly-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.month-item {
+  background: var(--rowA);
+  padding: 12px;
+  border-radius: 16px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.month-item label { font-size: 11px; color: var(--muted); font-weight: 600; }
+.month-item b { font-size: 16px; color: var(--accent); }
+
+/* Bottom Navbar */
+.nav-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--glass);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-top: 1px solid var(--border);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0));
+  display: flex;
+  justify-content: space-around;
+  z-index: 200;
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  color: var(--muted);
+  border: none;
+  background: none;
+  padding: 8px;
+  min-width: 60px;
+  min-height: auto;
+}
+
+.nav-active {
+  color: var(--accent);
+}
+
+.nav-icon {
+  font-size: 22px;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 600px) {
+  .dashboard { grid-template-columns: 1fr; }
+  .grid { grid-template-columns: 130px repeat(var(--days), 44px) 60px 48px; }
+  .stat { flex-direction: row; align-items: center; }
+  .stat span { margin-top: 0; }
+  .yearly-grid { grid-template-columns: repeat(3, 1fr); }
+  
+  .desktop-only { display: none !important; }
 }
 
 </style>
 </head>
-
 <body>
 
-<header>HABIT TRACKER</header>
-
-<div class="container">
-
-<!-- CONTROLS -->
-<div class="card controls">
-  <select id="year"></select>
-  <select id="month"></select>
-  <input id="newHabit" placeholder="Add new habit">
-  <button onclick="addHabit()">Add</button>
-
-  <!-- Enhancements -->
-  <button class="desktop-only" onclick="exportCSV()">Export CSV</button>
-  <button class="desktop-only" onclick="toggleTheme()">🌗</button>
-  <button class="desktop-only" onclick="enableReminder()">🔔</button>
-  <button class="desktop-only" id="installBtn">📲 Install App</button>
-
-  <!-- Auth -->
-  <button id="loginBtn">Login</button>
-  <button id="logoutBtn" style="display:none">Logout</button>
-
-  <div id="userProfile" style="display:none;align-items:center;gap:8px;margin-left:auto">
-    <img id="userPic" style="width:32px;height:32px;border-radius:50%">
-    <span id="userName" style="font-size:13px;color:#9aa4b2"></span>
+<header>
+  <h1>Habit Pro</h1>
+  <div id="userProfile">
+    <img id="userPic" alt="Profile">
+    <span id="userName"></span>
   </div>
-</div>
+</header>
 
-<!-- DASHBOARD -->
-<div class="card dashboard">
-  <div class="stat">📈 Overall<span id="overall">0%</span></div>
-  <div class="stat">🏆 Best<span id="best">-</span></div>
-  <div class="stat">⚠️ Weakest<span id="worst">-</span></div>
-</div>
-
-<!-- TABLE -->
-<div class="card table-shell">
-  <div class="table-wrapper">
-    <div id="header" class="grid table-header"></div>
-    <div id="body"></div>
+<div class="container" id="appContent">
+  
+  <!-- Step 1: Analytics -->
+  <div class="card dashboard">
+    <div class="stat">
+      <label>Overall</label>
+      <span id="overall">0%</span>
+    </div>
+    <div class="stat">
+      <label>Goal Reached</label>
+      <span id="best">-</span>
+    </div>
+    <div class="stat">
+      <label>Needs Focus</label>
+      <span id="worst">-</span>
+    </div>
   </div>
+
+  <!-- Step 2: Main Rituals -->
+  <div class="card table-shell">
+    <div class="table-header-row">
+      <h3>Active Rituals</h3>
+    </div>
+    <div class="table-wrapper">
+      <div id="header" class="grid table-header"></div>
+      <div id="body"></div>
+    </div>
+  </div>
+
+  <!-- Step 3: Global Actions -->
+  <div class="card">
+    <div class="controls">
+      <select id="year"></select>
+      <select id="month"></select>
+      <input id="newHabit" placeholder="New habit name..." enterkeyhint="done">
+      <button onclick="addHabit()" class="primary">Add Ritual</button>
+      
+      <button id="loginBtn">Login to Sync</button>
+      <button id="logoutBtn" style="display:none">Logout</button>
+    </div>
+  </div>
+
+  <!-- Yearly Insights -->
+  <div class="card yearly-section">
+    <h3>Insights</h3>
+    <div id="yearly" class="yearly-grid"></div>
+  </div>
+
 </div>
 
-<!-- YEARLY -->
-<div class="card">
-  <h3>📆 Yearly Overview</h3>
-  <div id="yearly" class="yearly"></div>
-</div>
+<!-- Bottom App Navigation -->
+<nav class="nav-bar">
+  <button class="nav-item nav-active" onclick="window.scrollTo({top:0, behavior:'smooth'})">
+    <span class="nav-icon">🏠</span>
+    <span style="font-size: 10px;">Home</span>
+  </button>
+  <button class="nav-item" onclick="toggleTheme()">
+    <span class="nav-icon">🌓</span>
+    <span style="font-size: 10px;">Theme</span>
+  </button>
+  <button class="nav-item" onclick="exportCSV()">
+    <span class="nav-icon">📤</span>
+    <span style="font-size: 10px;">Export</span>
+  </button>
+  <button class="nav-item" onclick="showInstallPrompt()" id="installBtnItem">
+    <span class="nav-icon">📲</span>
+    <span style="font-size: 10px;">Install</span>
+  </button>
+</nav>
 
-</div>
-
-<!-- MOBILE BAR -->
-<div class="mobile-bar">
-  <button onclick="toggleTheme()">🌗</button>
-  <button onclick="exportCSV()">📤</button>
-  <button onclick="enableReminder()">🔔</button>
-  <button onclick="document.getElementById('installBtn').click()">📲</button>
-</div>
-
-<!-- ================= EXISTING CORE LOGIC (UNCHANGED) ================= -->
 <script>
-/* USER STORAGE */
-let USER_KEY="guest";
-function setUser(uid){USER_KEY=uid||"guest"}
-function ukey(k){return USER_KEY+"::"+k}
+/* CORE LOGIC PRESERVATION */
+let USER_KEY = "guest";
+function setUser(uid) { USER_KEY = uid || "guest" }
+function ukey(k) { return USER_KEY + "::" + k }
 
-/* HABITS */
-let habits=JSON.parse(localStorage.getItem(ukey("habit-list")))||[
- "Daily Exercise","Drink 2L Water","Read 10 Pages",
- "Sleep Before 11 PM","Meditation","No Junk Food","Work on Goals"
+let habits = JSON.parse(localStorage.getItem(ukey("habit-list"))) || [
+  "Daily Exercise", "Drink 2L Water", "Read 10 Pages",
+  "Sleep Before 11 PM", "Meditation", "No Junk Food", "Work on Goals"
 ];
 
-const yearSel=document.getElementById("year");
-const monthSel=document.getElementById("month");
-const header=document.getElementById("header");
-const body=document.getElementById("body");
+const yearSel = document.getElementById("year");
+const monthSel = document.getElementById("month");
+const header = document.getElementById("header");
+const body = document.getElementById("body");
 
-const now=new Date();
-const currentYear=now.getFullYear();
+const now = new Date();
+const currentYear = now.getFullYear();
 
-/* Year / Month init */
-for(let y=currentYear-5;y<=currentYear+10;y++){
- let o=document.createElement("option");
- o.value=y;o.text=y;
- if(y===currentYear)o.selected=true;
- yearSel.appendChild(o);
+for(let y = currentYear - 2; y <= currentYear + 5; y++) {
+  let o = document.createElement("option"); o.value = y; o.text = y;
+  if(y === currentYear) o.selected = true;
+  yearSel.appendChild(o);
+}
+for(let m = 0; m < 12; m++) {
+  let o = document.createElement("option"); o.value = m;
+  o.text = new Date(2025, m).toLocaleString("default", { month: "long" });
+  if(m === now.getMonth()) o.selected = true;
+  monthSel.appendChild(o);
 }
 
-for(let m=0;m<12;m++){
- let o=document.createElement("option");
- o.value=m;
- o.text=new Date(2025,m).toLocaleString("default",{month:"long"});
- if(m===now.getMonth())o.selected=true;
- monthSel.appendChild(o);
+function daysInMonth(y, m) { return new Date(y, m + 1, 0).getDate() }
+function key(y, m, h, d) { return `${y}-${m}-${h}-${d}` }
+function isTodayCell(y, m, d) {
+  const t = new Date();
+  return y === t.getFullYear() && m === t.getMonth() && d === t.getDate();
 }
 
-function daysInMonth(y,m){return new Date(y,m+1,0).getDate()}
-function key(y,m,h,d){return `${y}-${m}-${h}-${d}`}
+function saveHabits() { localStorage.setItem(ukey("habit-list"), JSON.stringify(habits)) }
 
-function isTodayCell(y,m,d){
- const t=new Date();
- return y===t.getFullYear() && m===t.getMonth() && d===t.getDate();
-}
-
-function saveHabits(){
- localStorage.setItem(ukey("habit-list"),JSON.stringify(habits));
-}
-
-function addHabit(){
- const i=document.getElementById("newHabit");
- if(!i.value.trim())return;
- habits.push(i.value.trim());
- saveHabits();
-syncToCloud(ukey("habit-list"), JSON.stringify(habits));
-i.value="";
-render();
-
-}
-
-function removeHabit(h){
- if(!confirm(`Delete "${h}"?`))return;
- habits=habits.filter(x=>x!==h);
- saveHabits();
-syncToCloud(ukey("habit-list"), JSON.stringify(habits));
-render();
-;
-}
-
-function toggle(h,d){
- const y=+yearSel.value;
- const m=+monthSel.value;
- const k=key(y,m,h,d);
-const newValue = localStorage.getItem(ukey(k)) !== "true";
-localStorage.setItem(ukey(k), newValue);
-syncToCloud(ukey(k), newValue);
-render();
-
-}
-
-/* RENDER */
-function render(){
- const y=+yearSel.value;
- const m=+monthSel.value;
- const days=daysInMonth(y,m);
-
- header.style.setProperty("--days",days);
- body.style.setProperty("--days",days);
- header.innerHTML="";
- body.innerHTML="";
-
- header.innerHTML+="<div>Habit</div>";
- for(let d=1;d<=days;d++){
-  header.innerHTML+=`<div class="${isTodayCell(y,m,d)?"today":""}">${d}</div>`;
- }
- header.innerHTML+="<div>%</div><div>🗑️</div>";
-
- let best={n:"-",v:-1}, worst={n:"-",v:101}, total=0;
-
- habits.forEach(h=>{
-  let done=0;
-  const row=document.createElement("div");
-  row.className="grid row";
-  row.style.setProperty("--days",days);
-  row.innerHTML+=`<div class="cell habit">${h}</div>`;
-
-  for(let d=1;d<=days;d++){
-   const c=localStorage.getItem(ukey(key(y,m,h,d)))==="true";
-   if(c)done++;
-   row.innerHTML+=`
-    <div class="cell ${isTodayCell(y,m,d)?"today":""}">
-      <div class="box ${c?"checked":""}" onclick="toggle('${h}',${d})"></div>
-    </div>`;
-  }
-
-  const p=Math.round(done/days*100);
-  total+=p;
-  if(p>best.v)best={n:h,v:p};
-  if(p<worst.v)worst={n:h,v:p};
-
-  row.innerHTML+=`<div class="cell">${p}%</div>`;
-  row.innerHTML+=`<div class="cell delete" onclick="removeHabit('${h}')">🗑️</div>`;
-  body.appendChild(row);
- });
-
- document.getElementById("overall").innerText=Math.round(total/habits.length)+"%";
- document.getElementById("best").innerText=best.n;
- document.getElementById("worst").innerText=worst.n;
- yearly(y);
-}
-
-function yearly(y){
- const box=document.getElementById("yearly");
- box.innerHTML="";
- for(let m=0;m<12;m++){
-  let days=daysInMonth(y,m), sum=0;
-  habits.forEach(h=>{
-   let d=0;
-   for(let i=1;i<=days;i++)
-    if(localStorage.getItem(ukey(key(y,m,h,i)))==="true")d++;
-   sum+=d/days*100;
-  });
-  box.innerHTML+=`
-   <div class="month-box">
-    ${new Date(y,m).toLocaleString("default",{month:"short"})}<br>
-    <b>${Math.round(sum/habits.length)}%</b>
-   </div>`;
- }
-}
-
-yearSel.onchange=render;
-monthSel.onchange=render;
-render();
-
-/* EXPORT CSV */
-function exportCSV(){
- const y=+yearSel.value;
- const m=+monthSel.value;
- const days=daysInMonth(y,m);
- let csv="Habit";
- for(let d=1;d<=days;d++)csv+=`,`+d;
- csv+="\n";
- habits.forEach(h=>{
-  csv+=`"${h}"`;
-  for(let d=1;d<=days;d++){
-   csv+=localStorage.getItem(ukey(key(y,m,h,d)))==="true"?",✔":"";
-  }
-  csv+="\n";
- });
- const a=document.createElement("a");
- a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
- a.download=`habits-${y}-${m+1}.csv`;
- a.click();
-}
-
-/* THEME */
-function toggleTheme(){
- const r=document.documentElement;
- r.dataset.theme=r.dataset.theme==="light"?"dark":"light";
- localStorage.setItem("theme",r.dataset.theme);
-}
-document.documentElement.dataset.theme=localStorage.getItem("theme")||"dark";
-
-/* REMINDER */
-function enableReminder(){
- Notification.requestPermission().then(p=>{
-  if(p==="granted"){
-   setInterval(()=>{
-    new Notification("Habit Reminder",{body:"Complete today’s habits"});
-   },86400000);
-  }
- });
-}
-</script>
-
-<!-- ================= FIREBASE (UNCHANGED, VERIFIED) ================= -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth,GoogleAuthProvider,signInWithPopup,signOut,onAuthStateChanged }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getFirestore,doc,setDoc,onSnapshot }
-from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
-const app=initializeApp({
- apiKey:"AIzaSyDNoBvgu7W4txBT-nbnho_ILwU462bhlC4",
- authDomain:"habit-tracker-de698.firebaseapp.com",
- projectId:"habit-tracker-de698"
-});
-
-const auth=getAuth(app);
-const db=getFirestore(app);
-const provider=new GoogleAuthProvider();
- async function syncToCloudInternal(key, value) {
-  if (USER_KEY === "guest") return;
-  console.log("Cloud Syncing:", key);
-  try {
-    await setDoc(
-      doc(db, "users", USER_KEY),
-      {
-        [key]: {
-          value: value,
-          updatedAt: Date.now()
-        }
-      },
-      { merge: true }
-    );
-  } catch (err) {
-    console.error("Firestore Save Error:", err);
-  }
-}
-
-/* ✅ MAKE IT GLOBAL */
-window.syncToCloud = syncToCloudInternal;
-
-
-const loginBtn=document.getElementById("loginBtn");
-const logoutBtn=document.getElementById("logoutBtn");
-const userProfile=document.getElementById("userProfile");
-const userPic=document.getElementById("userPic");
-const userName=document.getElementById("userName");
-
-loginBtn.onclick=()=> {
-  signInWithPopup(auth,provider)
-    .catch(err => {
-      console.error("Login Failed:", err);
-      if (err.code === 'auth/unauthorized-domain') {
-        alert("Domain Not Authorized: Please add your Vercel domain to Firebase Console > Authentication > Settings > Authorized Domains.");
-      } else {
-        alert("Login failed: " + err.message);
-      }
-    });
-};
-logoutBtn.onclick=()=>signOut(auth);
-
-let unsub=null;
-
-onAuthStateChanged(auth,user=>{
- if(unsub)unsub();
-
- if(user){
-  console.log("User Auth Status: Logged In", user.uid);
-  setUser(user.uid);
-  loginBtn.style.display="none";
-  logoutBtn.style.display="inline-block";
-  userProfile.style.display="flex";
-  userPic.src=user.photoURL;
-  userName.textContent=user.displayName||user.email;
-
-  const ref=doc(db,"users",user.uid);
-  unsub=onSnapshot(ref,snap=>{
-    const data=snap.data();
-    if(!data) return;
-    
-    console.log("Cloud Data Received", Object.keys(data).length, "keys");
-    // Corrected loop logic - removed redundant nested loop
-    Object.keys(data).forEach(k => {
-      if (data[k] && data[k].value !== undefined) {
-        localStorage.setItem(k, data[k].value);
-      }
-    });
-
-    habits=JSON.parse(localStorage.getItem(ukey("habit-list")))||habits;
-    render();
-  }, err => console.error("Firestore Snapshot Error:", err));
- }else{
-  console.log("User Auth Status: Guest");
-  setUser(null);
-  loginBtn.style.display="inline-block";
-  logoutBtn.style.display="none";
-  userProfile.style.display="none";
+function addHabit() {
+  const i = document.getElementById("newHabit");
+  if(!i.value.trim()) return;
+  habits.push(i.value.trim());
+  saveHabits();
+  syncToCloud(ukey("habit-list"), JSON.stringify(habits));
+  i.value = "";
   render();
- }
-});
-
-
-</script>
-<script>
-/* ===== PWA INSTALL (FINAL, SINGLE SCRIPT) ===== */
-let deferredPrompt = null;
-const installBtn = document.getElementById("installBtn");
-
-/* Hide button if already installed */
-if (window.matchMedia('(display-mode: standalone)').matches) {
-  installBtn.style.display = "none";
 }
 
-/* Capture install prompt */
-window.addEventListener("beforeinstallprompt", (e) => {
+function removeHabit(h) {
+  if(!confirm(`Delete "${h}"?`)) return;
+  habits = habits.filter(x => x !== h);
+  saveHabits();
+  syncToCloud(ukey("habit-list"), JSON.stringify(habits));
+  render();
+}
+
+function toggle(h, d) {
+  const y = +yearSel.value, m = +monthSel.value, k = key(y, m, h, d);
+  const v = localStorage.getItem(ukey(k)) !== "true";
+  localStorage.setItem(ukey(k), v);
+  syncToCloud(ukey(k), v);
+  render();
+}
+
+function render() {
+  const y = +yearSel.value, m = +monthSel.value, days = daysInMonth(y, m);
+  header.style.setProperty("--days", days);
+  body.style.setProperty("--days", days);
+  header.innerHTML = "<div>Habit</div>";
+  for(let d = 1; d <= days; d++) {
+    header.innerHTML += `<div class="${isTodayCell(y, m, d) ? "today" : ""}">${d}</div>`;
+  }
+  header.innerHTML += "<div>%</div><div>🗑</div>";
+
+  let totalP = 0, best = { n: "-", v: -1 }, worst = { n: "-", v: 101 };
+  body.innerHTML = "";
+
+  habits.forEach(h => {
+    let done = 0;
+    const row = document.createElement("div");
+    row.className = "grid row";
+    row.innerHTML = `<div class="cell habit-name">${h}</div>`;
+
+    for(let d = 1; d <= days; d++) {
+      const c = localStorage.getItem(ukey(key(y, m, h, d))) === "true";
+      if(c) done++;
+      row.innerHTML += `
+        <div class="cell ${isTodayCell(y, m, d) ? "today" : ""}">
+          <div class="box ${c ? "checked" : ""}" onclick="toggle('${h}', ${d})"></div>
+        </div>`;
+    }
+    const p = Math.round(done / days * 100);
+    totalP += p;
+    if(p > best.v) best = { n: h, v: p };
+    if(p < worst.v) worst = { n: h, v: p };
+
+    row.innerHTML += `<div class="cell" style="font-weight:800;color:var(--accent)">${p}%</div>`;
+    row.innerHTML += `<div class="cell delete" onclick="removeHabit('${h}')">✕</div>`;
+    body.appendChild(row);
+  });
+
+  document.getElementById("overall").innerText = Math.round(totalP / (habits.length || 1)) + "%";
+  document.getElementById("best").innerText = best.n;
+  document.getElementById("worst").innerText = worst.n;
+  yearly(y);
+}
+
+function yearly(y) {
+  const box = document.getElementById("yearly");
+  box.innerHTML = "";
+  for(let m = 0; m < 12; m++) {
+    let days = daysInMonth(y, m), sum = 0;
+    habits.forEach(h => {
+      let d = 0;
+      for(let i = 1; i <= days; i++) if(localStorage.getItem(ukey(key(y, m, h, i))) === "true") d++;
+      sum += d / days * 100;
+    });
+    box.innerHTML += `
+      <div class="month-item">
+        <label>${new Date(y, m).toLocaleString("default", { month: "short" })}</label>
+        <b>${Math.round(sum / (habits.length || 1))}%</b>
+      </div>`;
+  }
+}
+
+yearSel.onchange = render;
+monthSel.onchange = render;
+render();
+
+function exportCSV() {
+  const y = +yearSel.value, m = +monthSel.value, days = daysInMonth(y, m);
+  let csv = "Habit," + Array.from({ length: days }, (_, i) => i + 1).join(",") + "\n";
+  habits.forEach(h => {
+    csv += `"${h}"`;
+    for(let d = 1; d <= days; d++) csv += localStorage.getItem(ukey(key(y, m, h, d))) === "true" ? ",✔" : ",";
+    csv += "\n";
+  });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([csv], { type: "text/csv" }));
+  a.download = `habits-${y}-${m + 1}.csv`;
+  a.click();
+}
+
+function toggleTheme() {
+  const r = document.documentElement;
+  r.dataset.theme = r.dataset.theme === "light" ? "dark" : "light";
+  localStorage.setItem("theme", r.dataset.theme);
+}
+document.documentElement.dataset.theme = localStorage.getItem("theme") || "dark";
+
+/* Register PWA Service Worker */
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(() => console.log("Service Worker Registered"));
+  });
+}
+
+let deferredPrompt;
+window.addEventListener('beforeinstallprompt', (e) => {
   e.preventDefault();
   deferredPrompt = e;
-  installBtn.style.display = "inline-block";
+  document.getElementById('installBtnItem').style.display = 'flex';
 });
 
-/* Fallback visibility */
-window.addEventListener("load", () => {
-  if (!deferredPrompt && 'serviceWorker' in navigator) {
-    installBtn.style.display = "inline-block";
+async function showInstallPrompt() {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') deferredPrompt = null;
+  } else {
+    alert("To install: Open browser menu -> Install or Add to Home Screen");
   }
-});
+}
+</script>
 
-installBtn.addEventListener("click", async () => {
-  if (!deferredPrompt) {
-    alert("Use browser menu → Add to Home Screen");
-    return;
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+const app = initializeApp({
+  apiKey: "AIzaSyDNoBvgu7W4txBT-nbnho_ILwU462bhlC4",
+  authDomain: "habit-tracker-de698.firebaseapp.com",
+  projectId: "habit-tracker-de698"
+});
+const auth = getAuth(app), db = getFirestore(app), provider = new GoogleAuthProvider();
+
+async function syncToCloudInternal(key, value) {
+  if (USER_KEY === "guest") return;
+  try {
+    await setDoc(doc(db, "users", USER_KEY), { [key]: { value, updatedAt: Date.now() } }, { merge: true });
+  } catch (e) {
+    console.error("Sync error:", e);
   }
-  deferredPrompt.prompt();
-  await deferredPrompt.userChoice;
-  deferredPrompt = null;
-  installBtn.style.display = "none";
+}
+window.syncToCloud = syncToCloudInternal;
+
+const loginBtn = document.getElementById("loginBtn"), logoutBtn = document.getElementById("logoutBtn");
+const userProfile = document.getElementById("userProfile"), userPic = document.getElementById("userPic"), userName = document.getElementById("userName");
+
+loginBtn.onclick = () => signInWithPopup(auth, provider).catch(e => {
+  if (e.code === 'auth/unauthorized-domain') alert("Authorize your domain in Firebase Console first.");
+});
+logoutBtn.onclick = () => signOut(auth);
+
+let unsub = null;
+onAuthStateChanged(auth, user => {
+  if (unsub) unsub();
+  if (user) {
+    setUser(user.uid);
+    loginBtn.style.display = "none"; logoutBtn.style.display = "block";
+    userProfile.style.display = "flex"; userPic.src = user.photoURL; userName.textContent = user.displayName;
+    
+    unsub = onSnapshot(doc(db, "users", user.uid), snap => {
+      const data = snap.data();
+      if (!data) return;
+      Object.keys(data).forEach(k => { if (data[k] && data[k].value !== undefined) localStorage.setItem(k, data[k].value) });
+      habits = JSON.parse(localStorage.getItem(ukey("habit-list"))) || habits;
+      render();
+    });
+  } else {
+    setUser(null);
+    loginBtn.style.display = "block"; logoutBtn.style.display = "none";
+    userProfile.style.display = "none";
+    render();
+  }
 });
 </script>
 
